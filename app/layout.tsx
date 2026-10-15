@@ -21,7 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vibh-Anu CRM — Premium B2B Lead Lifecycle",
+  title: "VibhAnu CRM — Premium B2B Lead Lifecycle",
   description: "Enterprise Lead Management and Sequential Department Workflow Engine",
 };
 

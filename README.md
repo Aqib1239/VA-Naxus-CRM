@@ -1,4 +1,4 @@
-# ⚡ Vibh-Anu CRM — Enterprise Lead Lifecycle & Department Orchestration Engine
+# ⚡ VibhAnu CRM — Enterprise Lead Lifecycle & Department Orchestration Engine
 
 <div align="center">
 
@@ -22,7 +22,7 @@
 
 ## 🌟 Executive Overview
 
-**Vibh-Anu CRM** solves the enterprise lead slippage and compliance problem. Unlike standard generic CRMs where any team member can arbitrarily edit or skip lifecycle stages, Vibh-Anu CRM enforces an **ironclad, sequential 5-stage departmental pipeline**:
+**VibhAnu CRM** solves the enterprise lead slippage and compliance problem. Unlike standard generic CRMs where any team member can arbitrarily edit or skip lifecycle stages, VibhAnu CRM enforces an **ironclad, sequential 5-stage departmental pipeline**:
 
 $$\text{Marketing} \longrightarrow \text{Communication} \longrightarrow \text{Vigilance} \longrightarrow \text{Support} \longrightarrow \text{Sales (Claim)}$$
 
@@ -186,7 +186,7 @@ The platform includes seed data with 6 role-tailored user accounts. Use any of t
 ## 📁 Project Directory Structure
 
 ```plaintext
-Vibh-Anu-CRM/
+VibhAnu-CRM/
 ├── app/                                # Next.js 14 App Router Pages
 │   ├── communication/                  # Communication department queue & actions
 │   ├── leads/                          # Global Lead Directory & Detail view

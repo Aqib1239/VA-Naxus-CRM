@@ -154,7 +154,7 @@ export function Header({ onToggleMobileMenu }: HeaderProps) {
 
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-mono font-medium text-muted-foreground hidden sm:inline">
-              Vibh-Anu
+              VibhAnu
             </span>
             <span className="text-muted-foreground/40 text-xs hidden sm:inline">
               /

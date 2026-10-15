@@ -19,7 +19,7 @@ async function startServer() {
     // 3. Start listening
     server = app.listen(env.PORT, () => {
       logger.info(`=======================================================`);
-      logger.info(`🚀 Vibh-Anu CRM Backend API running on port ${env.PORT}`);
+      logger.info(`🚀 VibhAnu CRM Backend API running on port ${env.PORT}`);
       logger.info(`🔗 Environment: ${env.NODE_ENV}`);
       logger.info(`🔗 API Health: http://localhost:${env.PORT}/api/health`);
       logger.info(`🔗 Allowed Client: ${env.CLIENT_URL}`);

@@ -91,7 +91,7 @@ export default function LoginPage() {
             VA
           </div>
           <h1 className="text-[26px] font-semibold text-foreground tracking-tight">
-            Vibh-Anu CRM
+            VibhAnu CRM
           </h1>
           <p className="text-[14px] text-muted-foreground">
             Enterprise B2B Lead Management & Lifecycle Engine
@@ -194,7 +194,7 @@ export default function LoginPage() {
               isLoading={isLoading}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
-              Sign In to Vibh-Anu CRM
+              Sign In to VibhAnu CRM
             </Button>
           </form>
 

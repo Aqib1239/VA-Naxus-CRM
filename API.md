@@ -1,4 +1,4 @@
-# Vibh-Anu CRM — API Reference
+# VibhAnu CRM — API Reference
 
 > **Base URL:** `http://localhost:5000/api`  
 > **Content-Type:** `application/json` (unless uploading files)  

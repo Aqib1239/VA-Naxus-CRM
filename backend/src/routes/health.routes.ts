@@ -8,7 +8,7 @@ const router = Router();
 router.get("/health", (_req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
-    message: "Vibh-Anu CRM API is running",
+    message: "VibhAnu CRM API is running",
   });
 });
 

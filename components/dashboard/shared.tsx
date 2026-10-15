@@ -403,7 +403,7 @@ export function BentoAlertBanner({
   if (items.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-amber-300/80 dark:border-amber-900/40 bg-amber-500/5 dark:bg-amber-950/20 p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-neu-raised-sm">
+    <div className="rounded-2xl border border-amber-300/80 dark:border-amber-900/40 bg-amber-500/5 dark:bg-amber-950/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-neu-raised-sm">
       <div className="flex items-center gap-3">
         <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0 border border-amber-500/20 shadow-neu-inset-sm">
           <AlertCircle className="w-4.5 h-4.5" />

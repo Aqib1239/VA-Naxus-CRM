@@ -25,6 +25,7 @@ import {
 import { useAuth } from "@/context/auth-context";
 import { useLeads } from "@/context/leads-context";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -187,11 +188,11 @@ export function Sidebar({
               "flex items-center overflow-hidden h-10 w-full transition-all duration-350 ease-[cubic-bezier(0.22,1,0.36,1)]",
               isCollapsed ? "justify-center px-0" : "gap-2.5 pr-6"
             )}
-            aria-label="Vibh-Anu CRM"
+            aria-label="VibhAnu CRM"
           >
             {/* Brand Mark — Centered in collapsed mode, stable size */}
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground font-mono text-sm font-bold shadow-[2px_2px_8px_rgba(97,75,238,0.35),-2px_-2px_6px_rgba(255,255,255,0.85)] dark:shadow-[2px_2px_8px_rgba(0,0,0,0.5)] transition-transform duration-200">
-              VA
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full p-0.5 text-primary-foreground font-mono text-sm font-bold shadow-[2px_2px_8px_rgba(97,75,238,0.35),-2px_-2px_6px_rgba(255,255,255,0.85)] dark:shadow-[2px_2px_8px_rgba(0,0,0,0.5)] transition-transform duration-200">
+              <Image src="/logo.png" alt="VibhAnu CRM" width={36} height={36} />
             </div>
 
             {/* Brand Text — Smoothly transitions width & opacity */}
@@ -204,7 +205,7 @@ export function Sidebar({
               )}
             >
               <span className="truncate text-[15px] font-bold tracking-tight text-foreground leading-tight whitespace-nowrap">
-                Vibh-Anu CRM
+                VibhAnu CRM
               </span>
               <span className="truncate font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">
                 Enterprise Lead OS
@@ -273,7 +274,7 @@ export function Sidebar({
             <Building2 className="w-4 h-4 text-muted-foreground/70 shrink-0" />
             <div className="truncate">
               <p className="font-semibold text-foreground text-[12px] truncate">
-                Vibh-Anu CRM
+                VibhAnu CRM
               </p>
               <p className="text-[10px] text-muted-foreground font-mono">
                 Production v1.0
