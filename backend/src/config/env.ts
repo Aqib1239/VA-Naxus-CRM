@@ -30,6 +30,42 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().default("").transform((val) => val || process.env.CLOUDINARY_CLOUD_NAME || ""),
   CLOUDINARY_API_KEY: z.string().default("").transform((val) => val || process.env.CLOUDINARY_API_KEY || ""),
   CLOUDINARY_API_SECRET: z.string().default("").transform((val) => val || process.env.CLOUDINARY_API_SECRET || ""),
+  OPENROUTER_API_KEY: z.string().default("").transform((val) => val || process.env.OPENROUTER_API_KEY || ""),
+  OPENROUTER_MODEL: z
+    .string()
+    .default("nvidia/nemotron-3.5-lightning:free")
+    .transform((val) => val || process.env.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:free"),
+  OPENROUTER_BASE_URL: z
+    .string()
+    .default("https://openrouter.ai/api/v1")
+    .transform((val) => val || process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1"),
+  OPENROUTER_TIMEOUT_MS: z
+    .string()
+    .default("35000")
+    .transform((val) => parseInt(val, 10) || 35000),
+  OPENROUTER_MAX_RETRIES: z
+    .string()
+    .default("2")
+    .transform((val) => parseInt(val, 10) || 2),
+  GEMINI_API_KEY: z.string().default("").transform((val) => val || process.env.GEMINI_API_KEY || ""),
+  GEMINI_MODEL: z.string().default("gemini-3.8-flash").transform((val) => val || process.env.GEMINI_MODEL || "gemini-3.8-flash"),
+  GEMINI_EMBEDDING_MODEL: z.string().default("text-embedding-004").transform((val) => val || process.env.GEMINI_EMBEDDING_MODEL || "text-embedding-004"),
+  GEMINI_TIMEOUT_MS: z
+    .string()
+    .default("30000")
+    .transform((val) => parseInt(val, 10) || 30000),
+  GEMINI_MAX_RETRIES: z
+    .string()
+    .default("3")
+    .transform((val) => parseInt(val, 10) || 3),
+  AI_FEATURES_ENABLED: z
+    .string()
+    .default("true")
+    .transform((val) => (val === "true" || val === "1" || val === "yes")),
+  AI_MONTHLY_BUDGET_USD: z
+    .string()
+    .default("50")
+    .transform((val) => parseFloat(val) || 50),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

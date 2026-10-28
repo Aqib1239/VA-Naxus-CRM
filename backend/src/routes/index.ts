@@ -4,6 +4,7 @@ import leadRoutes from "./lead.routes";
 import dashboardRoutes from "./dashboard.routes";
 import adminRoutes from "./admin.routes";
 import healthRoutes from "./health.routes";
+import aiRoutes from "./ai.routes";
 
 const apiRouter = Router();
 
@@ -12,5 +13,6 @@ apiRouter.use("/auth", authRoutes);
 apiRouter.use("/leads", leadRoutes);
 apiRouter.use("/dashboard", dashboardRoutes);
 apiRouter.use("/admin", adminRoutes);
+apiRouter.use("/ai", aiRoutes);
 
 export default apiRouter;

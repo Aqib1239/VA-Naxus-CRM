@@ -14,6 +14,12 @@ import { AudioPlayer } from "@/components/ui/audio-player";
 import { ErrorState } from "@/components/ui/loading-state";
 import { Lead } from "@/types/leads";
 import { formatDateTime, getInitials } from "@/lib/utils";
+import { useAuth } from "@/context/auth-context";
+import { LeadInsightPanel } from "@/components/ai/LeadInsightPanel";
+import { SalesCopilot } from "@/components/ai/SalesCopilot";
+import { VigilanceCopilot } from "@/components/ai/VigilanceCopilot";
+import { SupportCopilot } from "@/components/ai/SupportCopilot";
+import { AudioIntelligencePanel } from "@/components/ai/AudioIntelligencePanel";
 import { 
   ArrowLeft, 
   Phone, 
@@ -34,6 +40,7 @@ import {
 export default function LeadDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { role } = useAuth();
   const { leads, getLeadById } = useLeads();
   const leadId = params?.id as string;
   const existingLead = leads.find((l) => l.id === leadId) || null;
@@ -266,6 +273,9 @@ export default function LeadDetailPage() {
               </div>
             </div>
           </BentoCard>
+
+          {/* AI Lead Intelligence Panel */}
+          <LeadInsightPanel leadId={lead.id} />
         </div>
 
         {/* Right Column (6 cols): Audio Player & Audit Timeline */}
@@ -293,6 +303,25 @@ export default function LeadDetailPage() {
               </div>
             )}
           </BentoCard>
+
+          {/* AI Audio Transcription & Dialogue Intelligence */}
+          <AudioIntelligencePanel
+            leadId={lead.id}
+            hasAudio={Boolean(lead.vigilanceDetails?.audio)}
+          />
+
+          {/* Role-Specific AI Copilots */}
+          {(role === "SALES" || role === "ADMIN" || lead.currentDepartment === "sales") && (
+            <SalesCopilot leadId={lead.id} />
+          )}
+
+          {(role === "VIGILANCE" || role === "ADMIN" || lead.currentDepartment === "vigilance") && (
+            <VigilanceCopilot leadId={lead.id} />
+          )}
+
+          {(role === "SUPPORT" || role === "ADMIN" || lead.currentDepartment === "support") && (
+            <SupportCopilot leadId={lead.id} />
+          )}
 
           {/* Lifecycle History / Audit Timeline */}
           <BentoCard

@@ -1,18 +1,19 @@
-# ⚡ VibhAnu CRM — Enterprise Lead Lifecycle & Department Orchestration Engine
+# ⚡ VA Nexus — Venture Automation Nexus | Connect. Automate. Accelerate.
 
 <div align="center">
 
 ![Next.js 14](https://img.shields.io/badge/Next.js-14.2.15-black?style=for-the-badge&logo=next.js&logoColor=white)
 ![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Framer Motion](https://img.shields.io/badge/Framer_Motion-11.11-FF0055?style=for-the-badge&logo=framer&logoColor=white)
+![Google Gemini](https://img.shields.io/badge/Google_Gemini-3.8_Flash-8E75B2?style=for-the-badge&logo=google&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-4.21-000000?style=for-the-badge&logo=express&logoColor=white)
 ![MongoDB Atlas](https://img.shields.io/badge/MongoDB_Atlas-8.7-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
 
 <br/>
 
-**A mission-critical B2B CRM engine enforcing strict sequential lead progression across 5 specialized enterprise departments, backed by mandatory audio compliance gating, role-based bento dashboards, and instant-render performance.**
+**AI-Powered Customer & Business Operations Platform — enforcing strict sequential lead progression across 5 specialized enterprise departments, backed by Google Gemini AI, mandatory audio compliance gating, role-based bento dashboards, and instant-render performance.**
+
+*Tagline: Connect. Automate. Accelerate.*
 
 [Features](#-key-features) • [Workflow](#-sequential-lead-lifecycle) • [Architecture](#-system-architecture) • [RBAC & Demo Credentials](#-role-based-access-control--demo-credentials) • [Quickstart](#-getting-started) • [API Specs](#-rest-api-overview)
 
@@ -22,7 +23,7 @@
 
 ## 🌟 Executive Overview
 
-**VibhAnu CRM** solves the enterprise lead slippage and compliance problem. Unlike standard generic CRMs where any team member can arbitrarily edit or skip lifecycle stages, VibhAnu CRM enforces an **ironclad, sequential 5-stage departmental pipeline**:
+**VA Nexus** (*Venture Automation Nexus*) is an enterprise customer operations and lead lifecycle platform. Unlike standard generic CRMs where any team member can arbitrarily edit or skip lifecycle stages, VA Nexus enforces an **ironclad, sequential 5-stage departmental pipeline**:
 
 $$\text{Marketing} \longrightarrow \text{Communication} \longrightarrow \text{Vigilance} \longrightarrow \text{Support} \longrightarrow \text{Sales (Claim)}$$
 

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { VANexusLogo } from "@/components/ui/va-nexus-logo";
 
 export default function ForgotPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -40,8 +41,8 @@ export default function ForgotPasswordPage() {
 
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
-          <div className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold font-mono text-xl mx-auto shadow-neu-btn">
-            VA
+          <div className="flex justify-center mb-1">
+            <VANexusLogo variant="icon" size="lg" />
           </div>
           <h1 className="text-2xl font-bold text-foreground tracking-tight">Account Recovery</h1>
           <p className="text-xs text-muted-foreground">
@@ -74,7 +75,7 @@ export default function ForgotPasswordPage() {
                 <Input
                   id="reset-email"
                   type="email"
-                  placeholder="name@vibhanu.com"
+                  placeholder="name@vanexus.ai"
                   leftIcon={<Mail className="w-4 h-4" />}
                   error={errors.email?.message}
                   {...register("email")}

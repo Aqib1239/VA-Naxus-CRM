@@ -1,5 +1,6 @@
-# VibhAnu CRM — API Reference
-
+# VA Nexus — API Reference
+> **Venture Automation Nexus — AI-Powered Customer & Business Operations Platform**  
+> **Tagline:** Connect. Automate. Accelerate.  
 > **Base URL:** `http://localhost:5000/api`  
 > **Content-Type:** `application/json` (unless uploading files)  
 > **Auth:** Bearer token in `Authorization` header **or** `vibhanu_auth_token` HttpOnly cookie

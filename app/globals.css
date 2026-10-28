@@ -255,6 +255,10 @@
 /* Sleek Enterprise SaaS Toasts (Linear x Stripe aesthetic)     */
 /* ───────────────────────────────────────────────────────────── */
 
+.dot-typing {
+  animation: dot-typing 1.2s ease-in-out infinite;
+}
+
 @keyframes toast-progress-countdown {
   from {
     transform: scaleX(1);
@@ -283,6 +287,17 @@
   to {
     opacity: 0;
     transform: translateX(20px);
+  }
+}
+
+@keyframes dot-typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
   }
 }
 

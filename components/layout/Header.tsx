@@ -121,7 +121,7 @@ export function Header({ onToggleMobileMenu }: HeaderProps) {
       return { title: "Lead Profile", section: "Workflow Details" };
     if (pathname === "/settings")
       return { title: "System Settings", section: "RBAC & Preferences" };
-    return { title: "Vibh-Anu CRM", section: "Portal" };
+    return { title: "VA Nexus", section: "Portal" };
   };
 
   const pageInfo = getPageInfo();
@@ -154,7 +154,7 @@ export function Header({ onToggleMobileMenu }: HeaderProps) {
 
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-mono font-medium text-muted-foreground hidden sm:inline">
-              VibhAnu
+              VA Nexus
             </span>
             <span className="text-muted-foreground/40 text-xs hidden sm:inline">
               /

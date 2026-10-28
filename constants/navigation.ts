@@ -3,7 +3,7 @@ import { Role } from "@/types/auth";
 export interface NavItem {
   title: string;
   href: string;
-  iconName: "LayoutDashboard" | "Megaphone" | "MessageSquare" | "ShieldCheck" | "Headphones" | "TrendingUp" | "Users" | "Settings";
+  iconName: "LayoutDashboard" | "Megaphone" | "MessageSquare" | "ShieldCheck" | "Headphones" | "TrendingUp" | "Users" | "Settings" | "Bot";
   badgeKey?: "marketing" | "communication" | "vigilance" | "support" | "sales" | "total";
   description: string;
   allowedRoles?: Role[]; // undefined means accessible by all, ADMIN sees all
@@ -71,5 +71,11 @@ export const SECONDARY_NAV_ITEMS: NavItem[] = [
     href: "/settings",
     iconName: "Settings",
     description: "User roles, permissions and system preferences",
+  },
+  {
+    title: "AI Command Center",
+    href: "/ai",
+    iconName: "Bot",
+    description: "Natural-language queries and AI copilots for CRM data",
   },
 ];

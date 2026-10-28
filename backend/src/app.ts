@@ -55,14 +55,14 @@ export function createApp(): Express {
   app.get("/", (_req, res) => {
     return res.status(200).json({
       success: true,
-      message: "VibhAnu CRM API is running",
+      message: "VA Nexus API is running",
     });
   });
 
   app.get("/api/health", (_req, res) => {
     return res.status(200).json({
       success: true,
-      message: "VibhAnu CRM API is running",
+      message: "VA Nexus API is running",
     });
   });
 

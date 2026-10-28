@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Building2,
   Lock,
+  Bot,
 } from "lucide-react";
 import {
   MAIN_NAV_ITEMS,
@@ -25,6 +26,7 @@ import {
 import { useAuth } from "@/context/auth-context";
 import { useLeads } from "@/context/leads-context";
 import { cn } from "@/lib/utils";
+import { VANexusLogo } from "@/components/ui/va-nexus-logo";
 import Image from "next/image";
 
 interface SidebarProps {
@@ -43,6 +45,7 @@ const ICON_MAP = {
   TrendingUp,
   Users,
   Settings,
+  Bot,
 };
 
 export function Sidebar({
@@ -185,32 +188,12 @@ export function Sidebar({
           <Link
             href="/"
             className={cn(
-              "flex items-center overflow-hidden h-10 w-full transition-all duration-350 ease-[cubic-bezier(0.22,1,0.36,1)]",
-              isCollapsed ? "justify-center px-0" : "gap-2.5 pr-6"
+              "flex items-center overflow-hidden h-10 w-full transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              isCollapsed ? "justify-center px-0" : "gap-2.5 px-1"
             )}
-            aria-label="VibhAnu CRM"
+            aria-label="VA Nexus"
           >
-            {/* Brand Mark — Centered in collapsed mode, stable size */}
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full p-0.5 text-primary-foreground font-mono text-sm font-bold shadow-[2px_2px_8px_rgba(97,75,238,0.35),-2px_-2px_6px_rgba(255,255,255,0.85)] dark:shadow-[2px_2px_8px_rgba(0,0,0,0.5)] transition-transform duration-200">
-              <Image src="/logo.png" alt="VibhAnu CRM" width={36} height={36} />
-            </div>
-
-            {/* Brand Text — Smoothly transitions width & opacity */}
-            <div
-              className={cn(
-                "flex min-w-0 flex-col overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                isCollapsed
-                  ? "max-w-0 opacity-0 -translate-x-2 pointer-events-none"
-                  : "max-w-[160px] opacity-100 translate-x-0"
-              )}
-            >
-              <span className="truncate text-[15px] font-bold tracking-tight text-foreground leading-tight whitespace-nowrap">
-                VibhAnu CRM
-              </span>
-              <span className="truncate font-mono text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">
-                Enterprise Lead OS
-              </span>
-            </div>
+            <VANexusLogo variant={isCollapsed ? "icon" : "full"} size="sm" />
           </Link>
 
           {/* Desktop Collapse Toggle */}
@@ -271,15 +254,15 @@ export function Sidebar({
           )}
         >
           <div className="flex items-center gap-2.5 px-1 whitespace-nowrap">
-            <Building2 className="w-4 h-4 text-muted-foreground/70 shrink-0" />
-            <div className="truncate">
+            <VANexusLogo className="w-2 h-2 text-muted-foreground/70 shrink-0 my-2" />
+            {/* <div className="truncate">
               <p className="font-semibold text-foreground text-[12px] truncate">
-                VibhAnu CRM
+                VA Nexus
               </p>
               <p className="text-[10px] text-muted-foreground font-mono">
-                Production v1.0
+                Connect. Automate. Accelerate.
               </p>
-            </div>
+            </div> */}
           </div>
         </div>
       </aside>

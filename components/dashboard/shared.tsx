@@ -1,5 +1,5 @@
 /**
- * Premium Bento-Style Dashboard Primitives — Vibh-Anu CRM
+ * Premium Bento-Style Dashboard Primitives — VA Nexus
  * 
  * Reusable components powering all 6 role-specific Bento workspaces
  * (Admin, Marketing, Communication, Vigilance, Support, Sales).

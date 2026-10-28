@@ -31,3 +31,17 @@ export const uploadLimiter = rateLimit({
     return ApiResponse.error(res, "Upload limit reached. Please try again later.", 429);
   },
 });
+
+export const aiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: env.NODE_ENV === "test" ? 10000 : 30, // 30 AI requests per minute per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => {
+    return ApiResponse.error(
+      res,
+      "AI request rate limit reached. Please wait a moment before sending more queries.",
+      429
+    );
+  },
+});

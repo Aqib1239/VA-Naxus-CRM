@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const newUser = await AuthService.switchRole(newRole);
     setUser(newUser);
     toast.success(`Active Role Switched: ${newUser.role}`, {
-      description: `Viewing VibhAnu CRM as ${newUser.name} (${newUser.department})`,
+      description: `Viewing VA Nexus as ${newUser.name} (${newUser.department})`,
     });
   };
 

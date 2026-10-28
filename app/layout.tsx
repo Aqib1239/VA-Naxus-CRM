@@ -21,8 +21,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VibhAnu CRM — Premium B2B Lead Lifecycle",
-  description: "Enterprise Lead Management and Sequential Department Workflow Engine",
+  title: "VA Nexus — Connect. Automate. Accelerate.",
+  description: "Venture Automation Nexus — AI-Powered Customer & Business Operations Platform",
 };
 
 export default function RootLayout({

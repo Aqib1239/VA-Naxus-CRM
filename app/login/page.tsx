@@ -23,6 +23,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { VANexusLogo } from "@/components/ui/va-nexus-logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -86,15 +87,12 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md space-y-6">
         {/* Brand Header */}
-        <div className="text-center space-y-2">
-          <div className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-bold font-mono text-xl mx-auto shadow-neu-btn">
-            VA
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <VANexusLogo variant="full" size="lg" />
           </div>
-          <h1 className="text-[26px] font-semibold text-foreground tracking-tight">
-            VibhAnu CRM
-          </h1>
-          <p className="text-[14px] text-muted-foreground">
-            Enterprise B2B Lead Management & Lifecycle Engine
+          <p className="text-[13px] text-muted-foreground font-medium">
+            AI-Powered Customer & Business Operations Platform
           </p>
         </div>
 
@@ -109,7 +107,7 @@ export default function LoginPage() {
               <Input
                 id="login-email"
                 type="email"
-                placeholder="name@vibhanu.com"
+                placeholder="name@vanexus.ai"
                 leftIcon={<Mail className="w-4 h-4" />}
                 error={errors.email?.message}
                 {...register("email")}
@@ -194,7 +192,7 @@ export default function LoginPage() {
               isLoading={isLoading}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
-              Sign In to VibhAnu CRM
+              Sign In to VA Nexus
             </Button>
           </form>
 
