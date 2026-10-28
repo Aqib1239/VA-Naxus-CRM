@@ -20,8 +20,8 @@ node_modules/
 .env.production.local
 
 # Keep example environment files
-!.env.example
-!.env.template
+# !.env.example
+# !.env.template
 
 # -------------------------------
 # Next.js
