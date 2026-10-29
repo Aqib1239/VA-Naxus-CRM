@@ -6,6 +6,14 @@ import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
 
 /**
+ * Normalizes Markdown tables where rows may have had breaks squashed into inline pipes.
+ */
+export function normalizeMarkdownTables(md: string): string {
+  if (!md || typeof md !== "string") return "";
+  return md.replace(/\|[ \t]*\|[ \t]*(?=[-\w])/g, "|\n| ");
+}
+
+/**
  * Safely unwrap and format any JSON string, serialized response,
  * or markdown code-fence wrapper so raw JSON is never displayed to the user.
  */
@@ -13,9 +21,9 @@ export function unwrapJsonString(raw: string): string {
   if (!raw || typeof raw !== "string") return "";
   let trimmed = raw.trim();
 
-  // If inside ```json ... ``` codeblock
-  if (trimmed.startsWith("```json") && trimmed.endsWith("```")) {
-    const inner = trimmed.slice(7, -3).trim();
+  // Strip code fences if wrapped in ```json ... ``` or ``` ... ```
+  if (trimmed.startsWith("```")) {
+    const inner = trimmed.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "").trim();
     try {
       const parsed = JSON.parse(inner);
       if (parsed && typeof parsed.answer === "string") {
@@ -26,11 +34,11 @@ export function unwrapJsonString(raw: string): string {
       }
     } catch {
       // not valid json, strip fence
-      trimmed = inner;
     }
+    trimmed = inner;
   }
 
-  // If raw JSON object string
+  // 1. Try standard JSON.parse
   if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
     try {
       const parsed = JSON.parse(trimmed);
@@ -41,11 +49,74 @@ export function unwrapJsonString(raw: string): string {
         return formatLeadsToMarkdown(parsed.leads);
       }
     } catch {
-      // not json, leave as is
+      // malformed JSON (e.g. unescaped quotes inside answer) - fall through to resilient extractor
     }
   }
 
-  return trimmed;
+  // 2. Resilient answer extraction if text contains "answer" or 'answer'
+  if (trimmed.includes('"answer"') || trimmed.includes("'answer'")) {
+    const answerMatch = trimmed.match(/["']answer["']\s*:\s*["']/);
+    if (answerMatch && answerMatch.index !== undefined) {
+      const valueStartIndex = answerMatch.index + answerMatch[0].length;
+      const remainder = trimmed.slice(valueStartIndex);
+
+      // Match boundary terminating the answer string
+      const boundaryRegex = /["']\s*,\s*["'](?:toolsUsed|suggestedFollowUps|disclaimer|crmContext|[a-zA-Z0-9_]+)["']\s*:|["']\s*}(?:\s*```)?/;
+      const boundaryMatch = remainder.match(boundaryRegex);
+
+      let rawAnswer = "";
+      if (boundaryMatch && boundaryMatch.index !== undefined) {
+        rawAnswer = remainder.slice(0, boundaryMatch.index);
+      } else {
+        const lastQuoteIndex = remainder.lastIndexOf('"');
+        if (lastQuoteIndex !== -1) {
+          rawAnswer = remainder.slice(0, lastQuoteIndex);
+        } else {
+          rawAnswer = remainder;
+        }
+      }
+
+      // Unescape standard escapes
+      let answer = rawAnswer
+        .replace(/\\r\\n/g, "\n")
+        .replace(/\\n/g, "\n")
+        .replace(/\\r/g, "\r")
+        .replace(/\\t/g, "\t")
+        .replace(/\\"/g, '"')
+        .replace(/\\\\/g, "\\");
+
+      // Clean up trailing malformed punctuation (e.g. `snapshot.|` -> `snapshot.`)
+      answer = answer.replace(/\.\|\s*$/, ".");
+      if (answer.endsWith("|") && !answer.slice(0, -1).includes("\n")) {
+        // keep if table
+      } else if (answer.endsWith("|") && !answer.trim().endsWith("||")) {
+        const lines = answer.trim().split("\n");
+        const lastLine = lines[lines.length - 1];
+        if (!lastLine.startsWith("|")) {
+          answer = answer.slice(0, answer.lastIndexOf("|")).trim();
+        }
+      }
+
+      if (answer && answer !== trimmed) {
+        return unwrapJsonString(answer);
+      }
+    }
+  }
+
+  // 3. Resilient leads extraction if text contains "leads"
+  if (trimmed.includes('"leads"') && (trimmed.startsWith("{") || trimmed.includes("["))) {
+    const leadsMatch = trimmed.match(/["']leads["']\s*:\s*(\[[\s\S]*?\])/);
+    if (leadsMatch) {
+      try {
+        const leads = JSON.parse(leadsMatch[1]);
+        if (Array.isArray(leads)) {
+          return formatLeadsToMarkdown(leads);
+        }
+      } catch {}
+    }
+  }
+
+  return normalizeMarkdownTables(trimmed);
 }
 
 function formatLeadsToMarkdown(leads: any[]): string {

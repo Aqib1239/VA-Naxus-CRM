@@ -68,13 +68,40 @@ export function errorMiddleware(err: any, req: Request, res: Response, _next: Ne
     return ApiResponse.unauthorized(res, "Authentication token has expired.");
   }
 
-  // 7. Custom status errors
-  const statusCode = err.statusCode || (err.status && typeof err.status === "number" ? err.status : 500);
+  // 7. Database connection errors
+  if (
+    err.name === "MongoServerSelectionError" ||
+    err.name === "MongoNetworkError" ||
+    err.name === "MongoTimeoutError"
+  ) {
+    return ApiResponse.error(
+      res,
+      "Database connection is currently unavailable. Please verify MongoDB service status.",
+      503
+    );
+  }
+
+  // 8. OpenRouter / AI Provider errors with specific HTTP status codes
+  const isOpenRouterError =
+    err.name === "OpenRouterApiError" ||
+    err.name === "OpenRouterRateLimitError" ||
+    err.name === "OpenRouterTimeoutError" ||
+    err.name === "OpenRouterConfigError";
+
+  const statusCode =
+    err.statusCode || (err.status && typeof err.status === "number" ? err.status : 500);
   const message = err.message || "An unexpected internal server error occurred.";
+
+  const clientMessage =
+    isOpenRouterError
+      ? message
+      : statusCode >= 500 && env.NODE_ENV === "production"
+        ? "Internal server error"
+        : message;
 
   return ApiResponse.error(
     res,
-    statusCode >= 500 && env.NODE_ENV === "production" ? "Internal server error" : message,
+    clientMessage,
     statusCode,
     err.errors
   );

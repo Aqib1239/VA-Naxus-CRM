@@ -8,11 +8,16 @@ import {
   isOpenRouterConfigured,
   openRouterEnv,
   OpenRouterConfigError,
+  OpenRouterRateLimitError,
+  OpenRouterTimeoutError,
+  OpenRouterApiError,
 } from "../../config/openrouter";
 import {
   callOpenRouter,
   parseOpenRouterJson,
   stripInternalReasoning,
+  extractFieldsFromMalformedJson,
+  normalizeMarkdownTables,
   OpenRouterChatMessage,
 } from "./openrouter.provider";
 import { logAiAudit } from "./ai-audit.service";
@@ -31,17 +36,19 @@ export const ALLOWED_CRM_TOOLS = [
 
 export type AllowedCrmTool = (typeof ALLOWED_CRM_TOOLS)[number];
 
+export { normalizeMarkdownTables, extractFieldsFromMalformedJson };
+
 /**
- * Safely unwrap nested JSON wrappers or code fences so the final answer
- * is always clean markdown rather than serialized JSON.
+ * Safely unwrap nested JSON wrappers, code fences, or malformed JSON
+ * so the final answer is always clean markdown rather than serialized JSON.
  */
 export function unwrapJsonAnswer(text: string): string {
   if (!text || typeof text !== "string") return "";
   let trimmed = text.trim();
 
-  // If inside ```json ... ``` codeblock
-  if (trimmed.startsWith("```json") && trimmed.endsWith("```")) {
-    const inner = trimmed.slice(7, -3).trim();
+  // Strip code fences if wrapped in ```json ... ``` or ``` ... ```
+  if (trimmed.startsWith("```")) {
+    const inner = trimmed.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "").trim();
     try {
       const parsed = JSON.parse(inner);
       if (parsed && typeof parsed.answer === "string") {
@@ -61,7 +68,15 @@ export function unwrapJsonAnswer(text: string): string {
     } catch {}
   }
 
-  return trimmed;
+  // If text contains "answer": ... or 'answer': ... but JSON.parse failed (e.g. unescaped quotes)
+  if (trimmed.includes('"answer"') || trimmed.includes("'answer'")) {
+    const extracted = extractFieldsFromMalformedJson(trimmed);
+    if (extracted.answer && extracted.answer !== trimmed) {
+      return unwrapJsonAnswer(extracted.answer);
+    }
+  }
+
+  return normalizeMarkdownTables(trimmed);
 }
 
 function getUserDeptFilter(user: IAuthUser): Record<string, any> {
@@ -353,6 +368,60 @@ export interface ChatHistoryMessage {
   content: string;
 }
 
+/**
+ * Normalizes multi-turn chat history for OpenRouter conversation:
+ * - Drops invalid/empty messages
+ * - Maps "model" role to "assistant"
+ * - Deduplicates consecutive user messages with identical content
+ * - Strips any trailing user message that duplicates the current question
+ * - Bounded to the most recent conversation turns
+ */
+export function normalizeChatHistory(
+  history: ChatHistoryMessage[] = [],
+  currentQuestion?: string
+): OpenRouterChatMessage[] {
+  if (!Array.isArray(history) || history.length === 0) {
+    return [];
+  }
+
+  const normalized: OpenRouterChatMessage[] = [];
+  const cleanQ = (currentQuestion || "").trim().toLowerCase();
+
+  for (const item of history) {
+    if (!item || typeof item.content !== "string") continue;
+    const content = item.content.trim();
+    if (!content) continue;
+
+    const role: "user" | "assistant" =
+      item.role === "assistant" || item.role === "model" ? "assistant" : "user";
+
+    // Deduplicate consecutive user messages with identical text
+    if (normalized.length > 0) {
+      const prev = normalized[normalized.length - 1];
+      if (prev.role === "user" && role === "user") {
+        if (prev.content.trim().toLowerCase() === content.toLowerCase()) {
+          continue;
+        }
+      }
+    }
+
+    normalized.push({ role, content });
+  }
+
+  // Strip trailing user message if it duplicates the current question
+  if (cleanQ) {
+    while (
+      normalized.length > 0 &&
+      normalized[normalized.length - 1].role === "user" &&
+      normalized[normalized.length - 1].content.trim().toLowerCase() === cleanQ
+    ) {
+      normalized.pop();
+    }
+  }
+
+  return normalized.slice(-8);
+}
+
 export interface CommandCenterRequest {
   question: string;
   history?: ChatHistoryMessage[];
@@ -465,19 +534,9 @@ Role constraints & grounding rules:
         { role: "system", content: systemInstruction },
       ];
 
-      // Include valid prior conversation turns (limiting to last 8 turns)
-      if (Array.isArray(history) && history.length > 0) {
-        const recentHistory = history.slice(-8);
-        for (const item of recentHistory) {
-          if (item && item.content && item.content.trim()) {
-            const role = item.role === "assistant" || item.role === "model" ? "assistant" : "user";
-            conversationMessages.push({
-              role,
-              content: item.content.trim(),
-            });
-          }
-        }
-      }
+      // Include normalized prior conversation turns (avoiding duplicate user turns)
+      const normalizedPriorTurns = normalizeChatHistory(history, question);
+      conversationMessages.push(...normalizedPriorTurns);
 
       // Current user turn with live CRM context snapshot
       const currentTurnPrompt = `Current User Question: "${question.replace(/"/g, "'")}"
@@ -492,18 +551,20 @@ MANDATORY ACCURACY & FORMATTING RULES:
 2. When presenting leads or comparable records (especially for stalled leads or leads in Vigilance without audio), you MUST include a clean Markdown table with headers:
    | Lead ID | Company Name | Stage / Status | Days Stalled | Audio Status | Evidence |
    |---|---|---|---|---|---|
+   Ensure every row is on its own separate line with a newline character.
 3. Bold key terms using double asterisks (e.g. **Vigilance**, **Missing Audio**, **Awaiting Verification**).
 4. For questions regarding Vigilance audio status:
    - If asked for leads in Vigilance without audio, report ONLY leads that meet both conditions: currently in the Vigilance stage, and recording data confirms audio is missing.
    - Distinguish strictly between:
-     * "missing": audio is not uploaded or URL is empty.
-     * "uploaded_awaiting_verification": audio file is present but verification completedAt is not yet set.
-     * "verified": verification completedAt is set (lead has completed vigilance).
+     * 'missing': audio is not uploaded or URL is empty.
+     * 'uploaded_awaiting_verification': audio file is present but verification completedAt is not yet set.
+     * 'verified': verification completedAt is set (lead has completed vigilance).
    - If audio metadata cannot be determined, explicitly state that it cannot be confirmed.
    - Cite the exact evidence from the data snapshot (e.g., "vigilanceDetails.audio is null/absent in database").
    - Do NOT equate general lead stalling with missing audio.
 5. Ground all lead counts, names, and IDs in the snapshot. Never fabricate records.
 6. The "answer" field MUST be a clean Markdown string. Never return an escaped JSON string or nested JSON object inside "answer".
+7. CRITICAL JSON ESCAPING: Inside the "answer" string, if you quote terms, use single quotes 'like this' or escaped quotes \\"like this\\". NEVER output unescaped double quotes that break JSON syntax.
 
 Return ONLY a valid JSON object matching this schema:
 {
@@ -546,11 +607,34 @@ Return ONLY a valid JSON object matching this schema:
           disclaimer = validated.disclaimer;
         }
       } catch (parseErr: any) {
-        // If model returned direct non-JSON text, clean it of any internal reasoning and unwrap
-        answerText = stripInternalReasoning(answerResponse.content);
-        answerText = unwrapJsonAnswer(answerText);
-        if (!answerText) {
-          answerText = answerResponse.content;
+        logger.warn(
+          {
+            correlationId,
+            parseError: parseErr?.message,
+            rawSnippet: answerResponse.content.slice(0, 300),
+          },
+          "Command Center JSON parse or validation failed; attempting resilient recovery"
+        );
+
+        const extracted = extractFieldsFromMalformedJson(answerResponse.content);
+        if (extracted.answer) {
+          answerText = unwrapJsonAnswer(extracted.answer);
+          if (extracted.toolsUsed.length > 0) {
+            reportedTools = extracted.toolsUsed as AllowedCrmTool[];
+          }
+          if (extracted.suggestedFollowUps.length > 0) {
+            followUps = extracted.suggestedFollowUps;
+          }
+          if (extracted.disclaimer) {
+            disclaimer = extracted.disclaimer;
+          }
+        } else {
+          // If model returned direct non-JSON text, clean it of any internal reasoning and unwrap
+          answerText = stripInternalReasoning(answerResponse.content);
+          answerText = unwrapJsonAnswer(answerText);
+          if (!answerText) {
+            answerText = answerResponse.content;
+          }
         }
       }
 
@@ -576,7 +660,16 @@ Return ONLY a valid JSON object matching this schema:
       };
     } catch (err: any) {
       logger.error(
-        { err: err?.message, correlationId, user: user.id },
+        {
+          correlationId,
+          userId: user.id,
+          userRole: user.role,
+          upstreamStatus: err?.status,
+          finishReason: err?.finishReason,
+          openRouterError: err?.message,
+          errorStack: err?.stack,
+          errorName: err?.name,
+        },
         "Command Center OpenRouter query processing failed"
       );
 
@@ -591,10 +684,28 @@ Return ONLY a valid JSON object matching this schema:
         errorCode: err?.name,
       });
 
+      // Preserve specific OpenRouter error types so error middleware sends the correct status code
+      if (
+        err?.name === "OpenRouterConfigError" ||
+        err?.name === "OpenRouterRateLimitError" ||
+        err?.name === "OpenRouterTimeoutError" ||
+        err?.name === "OpenRouterApiError" ||
+        err instanceof OpenRouterConfigError ||
+        err instanceof OpenRouterRateLimitError ||
+        err instanceof OpenRouterTimeoutError ||
+        err instanceof OpenRouterApiError
+      ) {
+        throw err;
+      }
+
       // Never silently return a fake canned answer! Propagate error with actionable message
-      throw new Error(
+      throw new OpenRouterApiError(
         err?.message ||
-          "Unable to generate response from OpenRouter AI. Please verify your connection and API key configuration, then try again."
+          "Unable to generate response from OpenRouter AI. Please verify your connection and API key configuration, then try again.",
+        err?.status || 500,
+        undefined,
+        err?.finishReason,
+        correlationId
       );
     }
   }

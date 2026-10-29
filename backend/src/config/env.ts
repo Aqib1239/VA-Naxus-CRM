@@ -47,6 +47,10 @@ const envSchema = z.object({
     .string()
     .default("2")
     .transform((val) => parseInt(val, 10) || 2),
+  OPENROUTER_MAX_TOKENS: z
+    .string()
+    .default("4096")
+    .transform((val) => parseInt(val, 10) || 4096),
   GEMINI_API_KEY: z.string().default("").transform((val) => val || process.env.GEMINI_API_KEY || ""),
   GEMINI_MODEL: z.string().default("gemini-3.8-flash").transform((val) => val || process.env.GEMINI_MODEL || "gemini-3.8-flash"),
   GEMINI_EMBEDDING_MODEL: z.string().default("text-embedding-004").transform((val) => val || process.env.GEMINI_EMBEDDING_MODEL || "text-embedding-004"),

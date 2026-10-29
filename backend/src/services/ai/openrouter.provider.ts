@@ -31,6 +31,8 @@ export interface OpenRouterResponse {
   taskType: string;
   latencyMs: number;
   retries: number;
+  finishReason?: string | null;
+  toolCalls?: any[];
   reasoningDetails?: any;
   usage?: {
     promptTokens?: number;
@@ -81,6 +83,7 @@ export async function callOpenRouter(req: OpenRouterRequest): Promise<OpenRouter
   const taskType = req.taskType || "command_center";
   const baseUrl = (openRouterEnv.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1").replace(/\/+$/, "");
   const endpoint = `${baseUrl}/chat/completions`;
+  const maxTokens = req.maxTokens ?? (openRouterEnv.OPENROUTER_MAX_TOKENS || 4096);
 
   if (!isOpenRouterConfigured()) {
     throw new OpenRouterConfigError(
@@ -100,7 +103,7 @@ export async function callOpenRouter(req: OpenRouterRequest): Promise<OpenRouter
 
     try {
       logger.info(
-        { correlationId, model, taskType, attempt, endpoint },
+        { correlationId, model, taskType, attempt, endpoint, maxTokens },
         "Sending request to OpenRouter API"
       );
 
@@ -115,9 +118,9 @@ export async function callOpenRouter(req: OpenRouterRequest): Promise<OpenRouter
         body: JSON.stringify({
           model,
           messages: req.messages,
-          reasoning: { enabled: true },
+          reasoning: { max_tokens: 1500 },
           temperature: req.temperature ?? 0.2,
-          max_tokens: req.maxTokens ?? 2048,
+          max_tokens: maxTokens,
         }),
         signal: controller.signal,
       });
@@ -141,26 +144,36 @@ export async function callOpenRouter(req: OpenRouterRequest): Promise<OpenRouter
           `HTTP ${res.status} ${res.statusText}`;
 
         logger.error(
-          { correlationId, status: res.status, rawMsg, taskType, model },
+          {
+            correlationId,
+            upstreamStatus: res.status,
+            openRouterError: rawMsg,
+            taskType,
+            model,
+            attempt,
+          },
           "OpenRouter API returned error status"
         );
 
         // Fail fast on auth, credit, rate limit, or model not found errors (no retry loop)
         if (res.status === 401 || res.status === 403) {
           throw new OpenRouterConfigError(
-            `OpenRouter authentication failed (${res.status}): ${rawMsg}. Please check your OPENROUTER_API_KEY in backend/.env.`
+            `OpenRouter authentication failed (${res.status}): ${rawMsg}. Please check your OPENROUTER_API_KEY in backend/.env.`,
+            res.status
           );
         }
 
         if (res.status === 402) {
           throw new OpenRouterConfigError(
-            `OpenRouter account has insufficient credits: ${rawMsg}.`
+            `OpenRouter account has insufficient credits: ${rawMsg}.`,
+            402
           );
         }
 
         if (res.status === 429) {
           throw new OpenRouterRateLimitError(
-            `OpenRouter rate limit or model quota exceeded for '${model}': ${rawMsg}. Please retry in a few moments.`
+            `OpenRouter rate limit or model quota exceeded for '${model}': ${rawMsg}. Please retry in a few moments.`,
+            429
           );
         }
 
@@ -168,7 +181,9 @@ export async function callOpenRouter(req: OpenRouterRequest): Promise<OpenRouter
           throw new OpenRouterApiError(
             `OpenRouter model '${model}' is unavailable or rejected request (${res.status}): ${rawMsg}`,
             res.status,
-            errJson
+            errJson,
+            null,
+            correlationId
           );
         }
 
@@ -176,33 +191,100 @@ export async function callOpenRouter(req: OpenRouterRequest): Promise<OpenRouter
         throw new OpenRouterApiError(
           `OpenRouter service error (${res.status}): ${rawMsg}`,
           res.status,
-          errJson
+          errJson,
+          null,
+          correlationId
         );
       }
 
       const data: any = await res.json();
-      const choice = data?.choices?.[0];
+      const choices = data?.choices;
+
+      if (!Array.isArray(choices) || choices.length === 0) {
+        logger.error(
+          {
+            correlationId,
+            upstreamStatus: res.status,
+            model: data?.model || model,
+            taskType,
+            hasChoices: false,
+          },
+          "OpenRouter returned response with empty or missing choices array"
+        );
+        throw new OpenRouterApiError(
+          "OpenRouter returned an empty choices array.",
+          502,
+          data,
+          null,
+          correlationId
+        );
+      }
+
+      const choice = choices[0];
       const message = choice?.message;
+      const finishReason = choice?.finish_reason || choice?.native_finish_reason || null;
+      const toolCalls = Array.isArray(message?.tool_calls) ? message.tool_calls : [];
+      const hasToolCalls = toolCalls.length > 0;
 
       // Extract only intended content; NEVER forward message.reasoning or message.reasoning_details to client
-      const rawContent: string = message?.content || "";
+      const rawContent: string = typeof message?.content === "string" ? message.content : "";
       const reasoningDetails = message?.reasoning_details || null;
       const cleanContent = stripInternalReasoning(rawContent);
+      const hasContent = Boolean(cleanContent && cleanContent.trim().length > 0);
 
-      if (!cleanContent && !rawContent) {
+      logger.info(
+        {
+          correlationId,
+          model: data?.model || model,
+          taskType,
+          latencyMs,
+          retries: attempt,
+          upstreamStatus: res.status,
+          finishReason,
+          hasContent,
+          hasToolCalls,
+          tokens: {
+            prompt: data?.usage?.prompt_tokens,
+            completion: data?.usage?.completion_tokens,
+            reasoning: data?.usage?.completion_tokens_details?.reasoning_tokens,
+          },
+        },
+        "OpenRouter request completed"
+      );
+
+      if (!hasContent && !hasToolCalls) {
+        logger.error(
+          {
+            correlationId,
+            model: data?.model || model,
+            finishReason,
+            upstreamStatus: res.status,
+            hasContent: false,
+            hasToolCalls: false,
+          },
+          "OpenRouter returned an empty response with no content or tool calls"
+        );
+
+        if (finishReason === "length") {
+          throw new OpenRouterApiError(
+            "OpenRouter model exhausted its token limit before completing content.",
+            502,
+            data,
+            finishReason,
+            correlationId
+          );
+        }
+
         throw new OpenRouterApiError(
           "OpenRouter returned an empty response content.",
-          500,
-          data
+          502,
+          data,
+          finishReason,
+          correlationId
         );
       }
 
       const returnedModel = data?.model || model;
-
-      logger.info(
-        { correlationId, model: returnedModel, taskType, latencyMs, retries: attempt },
-        "OpenRouter request completed successfully"
-      );
 
       return {
         content: cleanContent || rawContent,
@@ -211,6 +293,8 @@ export async function callOpenRouter(req: OpenRouterRequest): Promise<OpenRouter
         taskType,
         latencyMs,
         retries: attempt,
+        finishReason,
+        toolCalls,
         reasoningDetails,
         usage: {
           promptTokens: data?.usage?.prompt_tokens,
@@ -229,9 +313,19 @@ export async function callOpenRouter(req: OpenRouterRequest): Promise<OpenRouter
 
       if (isAbort) {
         lastError = new OpenRouterTimeoutError(
-          `OpenRouter API request timed out after ${timeoutMs}ms for task '${taskType}'.`
+          `OpenRouter API request timed out after ${timeoutMs}ms for task '${taskType}'.`,
+          504
         );
-        logger.warn({ correlationId, taskType, attempt, timeoutMs }, "OpenRouter request timed out");
+        logger.warn(
+          {
+            correlationId,
+            taskType,
+            attempt,
+            timeoutMs,
+            errorStack: err?.stack,
+          },
+          "OpenRouter request timed out"
+        );
       }
 
       // If it's a fatal config or rate limit error, do NOT retry
@@ -244,7 +338,14 @@ export async function callOpenRouter(req: OpenRouterRequest): Promise<OpenRouter
       }
 
       logger.warn(
-        { correlationId, taskType, attempt, latencyMs, message: err?.message },
+        {
+          correlationId,
+          taskType,
+          attempt,
+          latencyMs,
+          message: err?.message,
+          errorStack: err?.stack,
+        },
         "OpenRouter transient error, evaluating retry"
       );
 
@@ -259,7 +360,13 @@ export async function callOpenRouter(req: OpenRouterRequest): Promise<OpenRouter
   }
 
   logger.error(
-    { correlationId, taskType, attempts: attempt },
+    {
+      correlationId,
+      taskType,
+      attempts: attempt,
+      errorStack: lastError?.stack,
+      lastErrorMessage: lastError?.message,
+    },
     "OpenRouter provider exhausted all retries"
   );
 
@@ -267,14 +374,154 @@ export async function callOpenRouter(req: OpenRouterRequest): Promise<OpenRouter
     lastError ||
     new OpenRouterApiError(
       `OpenRouter request failed after ${attempt} attempts for task '${taskType}'`,
-      500
+      502,
+      undefined,
+      null,
+      correlationId
     )
   );
 }
 
 /**
+ * Normalizes Markdown tables that may have had row breaks squashed
+ * into inline pipe sequences by LLMs (e.g., `| col1 | |---| | col2 |`).
+ */
+export function normalizeMarkdownTables(md: string): string {
+  if (!md || typeof md !== "string") return "";
+  return md.replace(/\|[ \t]*\|[ \t]*(?=[-\w])/g, "|\n| ");
+}
+
+export interface ExtractedCommandCenterFields {
+  answer: string;
+  toolsUsed: string[];
+  suggestedFollowUps: string[];
+  disclaimer: string;
+}
+
+/**
+ * Resilient field extractor for malformed or unescaped JSON responses from LLMs.
+ * Recovers "answer", "toolsUsed", "suggestedFollowUps", and "disclaimer" even when
+ * inner quotation marks were unescaped by the model.
+ */
+export function extractFieldsFromMalformedJson(text: string): ExtractedCommandCenterFields {
+  if (!text || typeof text !== "string") {
+    return { answer: "", toolsUsed: [], suggestedFollowUps: [], disclaimer: "" };
+  }
+
+  let cleaned = text.trim();
+  cleaned = stripInternalReasoning(cleaned);
+
+  // Strip code fences if present
+  if (cleaned.startsWith("```")) {
+    cleaned = cleaned.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "").trim();
+  }
+
+  // 1. Attempt standard JSON parse first
+  try {
+    const parsed = JSON.parse(cleaned);
+    if (parsed && typeof parsed === "object") {
+      const answerVal = typeof parsed.answer === "string" ? normalizeMarkdownTables(parsed.answer) : "";
+      return {
+        answer: answerVal,
+        toolsUsed: Array.isArray(parsed.toolsUsed) ? parsed.toolsUsed.map(String) : [],
+        suggestedFollowUps: Array.isArray(parsed.suggestedFollowUps)
+          ? parsed.suggestedFollowUps.map(String)
+          : [],
+        disclaimer: typeof parsed.disclaimer === "string" ? parsed.disclaimer : "",
+      };
+    }
+  } catch {
+    // Fall through to resilient regex extraction
+  }
+
+  let answer = "";
+  let toolsUsed: string[] = [];
+  let suggestedFollowUps: string[] = [];
+  let disclaimer = "";
+
+  // 2. Resilient answer extraction
+  const answerMatch = cleaned.match(/["']answer["']\s*:\s*["']/);
+  if (answerMatch && answerMatch.index !== undefined) {
+    const valueStartIndex = answerMatch.index + answerMatch[0].length;
+    const remainder = cleaned.slice(valueStartIndex);
+
+    // Look for boundary terminating the answer string:
+    // e.g. '", "toolsUsed":' or '", "suggestedFollowUps":' or '", "disclaimer":' or '"}'
+    const boundaryRegex = /["']\s*,\s*["'](?:toolsUsed|suggestedFollowUps|disclaimer|crmContext|[a-zA-Z0-9_]+)["']\s*:|["']\s*}(?:\s*```)?/;
+    const boundaryMatch = remainder.match(boundaryRegex);
+
+    let rawAnswer = "";
+    if (boundaryMatch && boundaryMatch.index !== undefined) {
+      rawAnswer = remainder.slice(0, boundaryMatch.index);
+    } else {
+      const lastQuoteIndex = remainder.lastIndexOf('"');
+      if (lastQuoteIndex !== -1) {
+        rawAnswer = remainder.slice(0, lastQuoteIndex);
+      } else {
+        rawAnswer = remainder;
+      }
+    }
+
+    // Decode escaped characters
+    answer = rawAnswer
+      .replace(/\\r\\n/g, "\n")
+      .replace(/\\n/g, "\n")
+      .replace(/\\r/g, "\r")
+      .replace(/\\t/g, "\t")
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, "\\");
+
+    // Clean up trailing malformed punctuation (e.g. `snapshot.|` -> `snapshot.`)
+    answer = answer.replace(/\.\|\s*$/, ".");
+    if (answer.endsWith("|") && !answer.slice(0, -1).includes("\n")) {
+      // keep if table fragment
+    } else if (answer.endsWith("|") && !answer.trim().endsWith("||")) {
+      // If trailing stray pipe after non-table text
+      const lines = answer.trim().split("\n");
+      const lastLine = lines[lines.length - 1];
+      if (!lastLine.startsWith("|")) {
+        answer = answer.slice(0, answer.lastIndexOf("|")).trim();
+      }
+    }
+
+    answer = normalizeMarkdownTables(answer.trim());
+  }
+
+  // 3. Resilient toolsUsed extraction
+  const toolsMatch = cleaned.match(/["']toolsUsed["']\s*:\s*\[([\s\S]*?)\]/);
+  if (toolsMatch) {
+    try {
+      toolsUsed = JSON.parse(`[${toolsMatch[1]}]`);
+    } catch {
+      const items = [...toolsMatch[1].matchAll(/["']([^"']+)["']/g)].map((m) => m[1]);
+      if (items.length > 0) toolsUsed = items;
+    }
+  }
+
+  // 4. Resilient suggestedFollowUps extraction
+  const followUpsMatch = cleaned.match(/["']suggestedFollowUps["']\s*:\s*\[([\s\S]*?)\]/);
+  if (followUpsMatch) {
+    try {
+      suggestedFollowUps = JSON.parse(`[${followUpsMatch[1]}]`);
+    } catch {
+      const items = [...followUpsMatch[1].matchAll(/["']([^"']+)["']/g)].map((m) => m[1]);
+      if (items.length > 0) suggestedFollowUps = items;
+    }
+  }
+
+  // 5. Resilient disclaimer extraction
+  const disclaimerMatch = cleaned.match(/["']disclaimer["']\s*:\s*["']([\s\S]*?)["']\s*[,}]/);
+  if (disclaimerMatch) {
+    disclaimer = disclaimerMatch[1].replace(/\\"/g, '"');
+  }
+
+  return { answer, toolsUsed, suggestedFollowUps, disclaimer };
+}
+
+/**
  * Robust JSON parser for OpenRouter structured responses.
- * Automatically cleans markdown ```json ... ``` wrapping and whitespace.
+ * Automatically cleans markdown ```json ... ``` wrapping and whitespace,
+ * with resilient recovery for unescaped model output.
  */
 export function parseOpenRouterJson<T>(rawText: string, correlationId: string): T {
   let cleaned = rawText.trim();
@@ -312,6 +559,24 @@ export function parseOpenRouterJson<T>(rawText: string, correlationId: string): 
   try {
     return JSON.parse(cleaned) as T;
   } catch (err: any) {
+    // If standard JSON parsing failed, check if this is a Command Center response
+    // where inner unescaped quotes broke the syntax.
+    if (cleaned.includes('"answer"') || cleaned.includes("'answer'")) {
+      const extracted = extractFieldsFromMalformedJson(cleaned);
+      if (extracted.answer) {
+        logger.warn(
+          { correlationId, err: err?.message },
+          "OpenRouter structured JSON had syntax errors (e.g. unescaped quotes); recovered via resilient extractor"
+        );
+        return {
+          answer: extracted.answer,
+          toolsUsed: extracted.toolsUsed,
+          suggestedFollowUps: extracted.suggestedFollowUps,
+          disclaimer: extracted.disclaimer,
+        } as unknown as T;
+      }
+    }
+
     logger.error(
       { correlationId, rawTextSnippet: rawText.slice(0, 300), err: err?.message },
       "Failed to parse structured JSON from OpenRouter response"

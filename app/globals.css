@@ -259,6 +259,19 @@
   animation: dot-typing 1.2s ease-in-out infinite;
 }
 
+.animate-spinner-fast {
+  animation: spinner-fast 0.7s linear infinite;
+}
+
+@keyframes spinner-fast {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes toast-progress-countdown {
   from {
     transform: scaleX(1);

@@ -58,7 +58,30 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 
     next();
   } catch (err: any) {
-    logger.error({ err }, "Authentication middleware error");
+    const isDbError =
+      err?.name === "MongoServerSelectionError" ||
+      err?.name === "MongoNetworkError" ||
+      err?.name === "MongoTimeoutError" ||
+      (typeof err?.message === "string" &&
+        (err.message.includes("buffering timed out") ||
+          err.message.includes("connection pool") ||
+          err.message.includes("MongoNetworkError")));
+
+    logger.error(
+      {
+        errorName: err?.name,
+        errorMessage: err?.message,
+        errorStack: err?.stack,
+        isDbError,
+      },
+      "Authentication middleware error"
+    );
+
+    if (isDbError) {
+      // Forward database failure to error middleware so it is not masked as an invalid token
+      return next(err);
+    }
+
     return ApiResponse.unauthorized(res, "Authentication failed.");
   }
 }

@@ -7,15 +7,28 @@ import { Lead } from "../models/Lead.model";
 import { ROLES } from "../constants/roles";
 import { DEPARTMENTS, LEAD_STATUS } from "../constants/departments";
 import { generateToken } from "../utils/jwt";
-import { stripInternalReasoning } from "../services/ai/openrouter.provider";
-import { unwrapJsonAnswer } from "../services/ai/command-center.service";
+import {
+  callOpenRouter,
+  stripInternalReasoning,
+  parseOpenRouterJson,
+  extractFieldsFromMalformedJson,
+  normalizeMarkdownTables,
+} from "../services/ai/openrouter.provider";
+import { normalizeChatHistory, unwrapJsonAnswer } from "../services/ai/command-center.service";
+import {
+  OpenRouterApiError,
+  OpenRouterRateLimitError,
+  OpenRouterTimeoutError,
+  OpenRouterConfigError,
+} from "../config/openrouter";
 
 // Mock the OpenRouter Provider for Command Center
 jest.mock("../services/ai/openrouter.provider", () => {
   const actual = jest.requireActual("../services/ai/openrouter.provider");
   return {
     ...actual,
-    callOpenRouter: jest.fn(async ({ messages, correlationId }: any) => {
+    callOpenRouter: jest.fn(async (params) => {
+      const { messages = [], correlationId } = params || {};
       const lastUserMsg = messages[messages.length - 1]?.content || "";
       let answer = "There is currently 1 lead in the pipeline for your authorized scope in VA Nexus.";
       let toolsUsed = ["get_stage_counts"];
@@ -65,7 +78,8 @@ jest.mock("../services/ai/gemini.provider", () => {
   const actual = jest.requireActual("../services/ai/gemini.provider");
   return {
     ...actual,
-    callGemini: jest.fn(async ({ taskType, correlationId }: any) => {
+    callGemini: jest.fn(async (params) => {
+      const { taskType, correlationId } = params || {};
       if (taskType === "sales_copilot") {
         return {
           text: JSON.stringify({
@@ -584,5 +598,334 @@ describe("AI Subsystem & Copilot Routes", () => {
       .set("Authorization", `Bearer ${token}`);
 
     expect(res.status).toBe(403);
+  });
+
+  // =========================================================================
+  // PRODUCTION REGRESSION TEST SUITE: VA NEXUS AI SUBSYSTEM
+  // =========================================================================
+  describe("Production Regression Tests: Command Center & OpenRouter Resilience", () => {
+    describe("1. Duplicate History Normalization", () => {
+      it("normalizeChatHistory should strip trailing user message identical to current question", () => {
+        const history = [
+          { role: "user" as const, content: "Previous question" },
+          { role: "assistant" as const, content: "Previous answer" },
+          { role: "user" as const, content: "How many leads are in each pipeline stage?" },
+        ];
+        const normalized = normalizeChatHistory(history, "How many leads are in each pipeline stage?");
+        expect(normalized).toHaveLength(2);
+        expect(normalized[0]).toEqual({ role: "user", content: "Previous question" });
+        expect(normalized[1]).toEqual({ role: "assistant", content: "Previous answer" });
+      });
+
+      it("normalizeChatHistory should deduplicate consecutive identical user messages", () => {
+        const history = [
+          { role: "user" as const, content: "What is conversion rate?" },
+          { role: "user" as const, content: "What is conversion rate?" },
+          { role: "assistant" as const, content: "Conversion rate is 40%." },
+        ];
+        const normalized = normalizeChatHistory(history, "Next question");
+        expect(normalized).toHaveLength(2);
+        expect(normalized[0]).toEqual({ role: "user", content: "What is conversion rate?" });
+        expect(normalized[1]).toEqual({ role: "assistant", content: "Conversion rate is 40%." });
+      });
+
+      it("normalizeChatHistory should preserve legitimate alternating conversation history", () => {
+        const history = [
+          { role: "user" as const, content: "Turn 1" },
+          { role: "model" as const, content: "Answer 1" },
+          { role: "user" as const, content: "Turn 2" },
+          { role: "assistant" as const, content: "Answer 2" },
+        ];
+        const normalized = normalizeChatHistory(history, "Turn 3");
+        expect(normalized).toHaveLength(4);
+        expect(normalized[1].role).toBe("assistant"); // "model" mapped to "assistant"
+        expect(normalized[3].role).toBe("assistant");
+      });
+
+      it("normalizeChatHistory should handle empty or undefined history gracefully", () => {
+        expect(normalizeChatHistory(undefined, "Question")).toEqual([]);
+        expect(normalizeChatHistory([], "Question")).toEqual([]);
+      });
+
+      it("POST /api/ai/command-center should normalize history end-to-end and not send duplicate question", async () => {
+        const { token } = await createRoleUser(ROLES.ADMIN, "admin_norm@vibhanu.com");
+        const mockedCall = callOpenRouter as jest.MockedFunction<typeof callOpenRouter>;
+        mockedCall.mockClear();
+
+        const question = "Are there any leads stuck without audio in Vigilance?";
+        const res = await request(app)
+          .post("/api/ai/command-center")
+          .set("Authorization", `Bearer ${token}`)
+          .send({
+            question,
+            history: [
+              { role: "user", content: "Previous question" },
+              { role: "model", content: "Previous answer" },
+              { role: "user", content: question }, // duplicate of current question
+            ],
+          });
+
+        expect(res.status).toBe(200);
+        expect(mockedCall).toHaveBeenCalledTimes(1);
+        const sentMessages = mockedCall.mock.calls[0][0].messages;
+
+        // Verify sentMessages has: [system, Previous question, Previous answer, Current Turn Prompt]
+        // The duplicate question must NOT appear twice as consecutive user messages
+        expect(sentMessages.length).toBe(4);
+        expect(sentMessages[0].role).toBe("system");
+        expect(sentMessages[1]).toEqual({ role: "user", content: "Previous question" });
+        expect(sentMessages[2]).toEqual({ role: "assistant", content: "Previous answer" });
+        expect(sentMessages[3].role).toBe("user");
+        expect(sentMessages[3].content).toContain(`Current User Question: "${question}"`);
+      });
+    });
+
+    describe("2. Authentication & JWT Validation", () => {
+      it("should reject request with expired token with 401 Session expired", async () => {
+        const expiredToken = generateToken(
+          {
+            userId: new mongoose.Types.ObjectId().toString(),
+            name: "Expired Admin",
+            email: "expired@vibhanu.com",
+            role: ROLES.ADMIN,
+            department: DEPARTMENTS.MARKETING,
+          },
+          -10
+        );
+
+        const res = await request(app)
+          .post("/api/ai/command-center")
+          .set("Authorization", `Bearer ${expiredToken}`)
+          .send({ question: "Hello" });
+
+        expect(res.status).toBe(401);
+        expect(res.body.message).toContain("Session expired");
+      });
+
+      it("should reject request with malformed or invalid token with 401 Invalid authentication token", async () => {
+        const res = await request(app)
+          .post("/api/ai/command-center")
+          .set("Authorization", "Bearer totally_invalid_token_123")
+          .send({ question: "Hello" });
+
+        expect(res.status).toBe(401);
+        expect(res.body.message).toContain("Invalid authentication token");
+      });
+
+      it("should reject unauthenticated request with 401 Authentication required", async () => {
+        const res = await request(app)
+          .post("/api/ai/command-center")
+          .send({ question: "Hello" });
+
+        expect(res.status).toBe(401);
+        expect(res.body.message).toContain("Authentication required");
+      });
+    });
+
+    describe("3. Empty Model Response & Token Exhaustion Handling", () => {
+      it("should return safe 502 Bad Gateway when OpenRouter exhausts token limit (finish_reason: length)", async () => {
+        const { token } = await createRoleUser(ROLES.ADMIN, "admin_len@vibhanu.com");
+        const mockedCall = callOpenRouter as jest.MockedFunction<typeof callOpenRouter>;
+
+        mockedCall.mockImplementationOnce(async () => {
+          throw new OpenRouterApiError(
+            "OpenRouter model exhausted its token limit before completing content.",
+            502,
+            undefined,
+            "length"
+          );
+        });
+
+        const res = await request(app)
+          .post("/api/ai/command-center")
+          .set("Authorization", `Bearer ${token}`)
+          .send({ question: "Which leads have been stalled for more than 3 days?" });
+
+        expect(res.status).toBe(502);
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toContain("token limit");
+        // Verify no sensitive keys leaked
+        expect(JSON.stringify(res.body)).not.toContain("sk-or");
+      });
+
+      it("should return safe 502 when OpenRouter returns empty choices or empty content without tool calls", async () => {
+        const { token } = await createRoleUser(ROLES.ADMIN, "admin_empty@vibhanu.com");
+        const mockedCall = callOpenRouter as jest.MockedFunction<typeof callOpenRouter>;
+
+        mockedCall.mockImplementationOnce(async () => {
+          throw new OpenRouterApiError(
+            "OpenRouter returned an empty response content.",
+            502,
+            undefined,
+            "stop"
+          );
+        });
+
+        const res = await request(app)
+          .post("/api/ai/command-center")
+          .set("Authorization", `Bearer ${token}`)
+          .send({ question: "How many leads are in each stage?" });
+
+        expect(res.status).toBe(502);
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toContain("empty response content");
+      });
+    });
+
+    describe("4. Provider Errors (Rate Limits, Timeouts & Service Errors)", () => {
+      it("should safely return 429 when OpenRouter rate limit is exceeded", async () => {
+        const { token } = await createRoleUser(ROLES.ADMIN, "admin_rate@vibhanu.com");
+        const mockedCall = callOpenRouter as jest.MockedFunction<typeof callOpenRouter>;
+
+        mockedCall.mockImplementationOnce(async () => {
+          throw new OpenRouterRateLimitError(
+            "OpenRouter rate limit or model quota exceeded for 'nvidia/nemotron-3.5-lightning:free'.",
+            429
+          );
+        });
+
+        const res = await request(app)
+          .post("/api/ai/command-center")
+          .set("Authorization", `Bearer ${token}`)
+          .send({ question: "What is the conversion rate?" });
+
+        expect(res.status).toBe(429);
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toContain("rate limit or model quota exceeded");
+      });
+
+      it("should safely return 504 Gateway Timeout when OpenRouter request times out", async () => {
+        const { token } = await createRoleUser(ROLES.ADMIN, "admin_timeout@vibhanu.com");
+        const mockedCall = callOpenRouter as jest.MockedFunction<typeof callOpenRouter>;
+
+        mockedCall.mockImplementationOnce(async () => {
+          throw new OpenRouterTimeoutError(
+            "OpenRouter API request timed out after 35000ms for task 'command_center'.",
+            504
+          );
+        });
+
+        const res = await request(app)
+          .post("/api/ai/command-center")
+          .set("Authorization", `Bearer ${token}`)
+          .send({ question: "What is the conversion rate?" });
+
+        expect(res.status).toBe(504);
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toContain("timed out");
+      });
+    });
+
+    describe("5. CRM Permissions & RBAC Scoping", () => {
+      it("should strictly scope CRM data to MARKETING role and prevent unauthorized Vigilance data access", async () => {
+        const { token } = await createRoleUser(ROLES.MARKETING, "mkt_scope@vibhanu.com");
+
+        await createSampleLead({
+          leadCode: "VA-VIG-001",
+          name: "Vigilance Confidential Lead",
+          currentDepartment: DEPARTMENTS.VIGILANCE,
+          status: LEAD_STATUS.MEETING_SCHEDULED,
+        });
+
+        const res = await request(app)
+          .post("/api/ai/command-center")
+          .set("Authorization", `Bearer ${token}`)
+          .send({ question: "Show audio status of vigilance leads" });
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        // Verify crmContext returned does not expose vigilance leads to MARKETING
+        const vigilanceData = res.body.data.crmContext?.get_vigilance_audio_status_summary;
+        if (vigilanceData) {
+          expect(vigilanceData.totalVigilanceLeads).toBe(0);
+          expect(vigilanceData.message).toContain("not authorized");
+        }
+      });
+    });
+
+    describe("6. Independent MongoDB Connectivity", () => {
+      it("should successfully execute independent MongoDB operations and verify DB is healthy", async () => {
+        expect(mongoose.connection.readyState).toBe(1); // 1 = connected
+        const count = await Lead.countDocuments();
+        expect(typeof count).toBe("number");
+      });
+    });
+
+    describe("7. JSON Unwrapping & Malformed LLM Output Resilient Extraction", () => {
+      const userProblemSnippet = `{ "answer": "Leads in Vigilance Without Audio Recording\\n\\nThe live CRM snapshot confirms that all 4 leads currently in the Vigilance stage have missing audio recordings. Below is the detailed breakdown:\\n\\n| Lead ID | Company Name | Stage / Status | Days Stalled | Audio Status | Evidence | |---|---|---|---|---|---| | VA-2026-1007 | GreenLeaf Industries | Vigilance / meeting_scheduled | 23 | Missing | vigilanceDetails.audio is null/absent in database | | VA-2026-1021 | Tata Precision Engineering Ltd | Vigilance / meeting_scheduled | 21 | Missing | vigilanceDetails.audio is null/absent in database | | VA-2026-1022 | Aurobindo Logistics & ColdChain | Vigilance / meeting_scheduled | 21 | Missing | vigilanceDetails.audio is null/absent in database | | VA-2026-1023 | Infosys BPO Infrastructure Ltd | Vigilance / in_progress | 21 | Missing | vigilanceDetails.audio is null/absent in database\\n\\nKey: All 4 Vigilance-stage leads lack audio data. Audio status is confirmed as missing (not uploaded/URL empty), with no verification or confirmed records. No leads fall under "uploaded_awaiting_verification" or "verified" categories in this snapshot.|", "toolsUsed": ["get_vigilance_leads_without_audio", "get_vigilance_audio_status_summary"], "suggestedFollowUps": [ "Which Vigilance leads are closest to re-engagement given their stall duration?", "What is the total count of leads across all pipeline stages currently?" ], "disclaimer": "Live data analysis for ADMIN in VA Nexus via OpenRouter. Verified against CRM records." }`;
+
+      it("extractFieldsFromMalformedJson should cleanly extract fields from malformed JSON with unescaped internal quotes", () => {
+        const extracted = extractFieldsFromMalformedJson(userProblemSnippet);
+        expect(extracted.answer).toContain("Leads in Vigilance Without Audio Recording");
+        expect(extracted.answer).not.toContain('"toolsUsed":');
+        expect(extracted.answer.startsWith("{")).toBe(false);
+        expect(extracted.toolsUsed).toEqual([
+          "get_vigilance_leads_without_audio",
+          "get_vigilance_audio_status_summary",
+        ]);
+        expect(extracted.suggestedFollowUps).toHaveLength(2);
+        expect(extracted.disclaimer).toContain("Live data analysis for ADMIN in VA Nexus via OpenRouter.");
+      });
+
+      it("normalizeMarkdownTables should convert inline squashed table rows into newline-separated rows", () => {
+        const squashed = "| H1 | H2 | |---|---| | V1 | V2 | | V3 | V4 |";
+        const normalized = normalizeMarkdownTables(squashed);
+        expect(normalized).toBe("| H1 | H2 |\n| ---|---|\n| V1 | V2 |\n| V3 | V4 |");
+      });
+
+      it("unwrapJsonAnswer should return clean markdown and never leave raw JSON wrappers", () => {
+        const unwrapped = unwrapJsonAnswer(userProblemSnippet);
+        expect(unwrapped.startsWith("{")).toBe(false);
+        expect(unwrapped.endsWith("}")).toBe(false);
+        expect(unwrapped).toContain("Leads in Vigilance Without Audio Recording");
+        expect(unwrapped).toContain("| Lead ID | Company Name | Stage / Status |");
+        // Verify table rows were separated
+        expect(unwrapped).toContain("|\n| VA-2026-1007");
+        expect(unwrapped).toContain("|\n| VA-2026-1021");
+      });
+
+      it("parseOpenRouterJson should recover structured object without throwing on unescaped internal quotes", () => {
+        const res = parseOpenRouterJson<any>(userProblemSnippet, "cid_resilient_test");
+        expect(res).toBeDefined();
+        expect(typeof res.answer).toBe("string");
+        expect(res.answer).toContain("Leads in Vigilance Without Audio Recording");
+        expect(res.toolsUsed).toEqual([
+          "get_vigilance_leads_without_audio",
+          "get_vigilance_audio_status_summary",
+        ]);
+        expect(res.suggestedFollowUps).toHaveLength(2);
+      });
+
+      it("POST /api/ai/command-center should return 200 with clean markdown answer and tools when LLM returns malformed JSON with unescaped quotes", async () => {
+        const { token } = await createRoleUser(ROLES.ADMIN, "admin_malformed@vibhanu.com");
+        const mockedCall = callOpenRouter as jest.MockedFunction<typeof callOpenRouter>;
+
+        // Simulate OpenRouter returning the user's exact malformed output
+        mockedCall.mockImplementationOnce(async () => {
+          return {
+            content: userProblemSnippet,
+            model: "nvidia/nemotron-3.5-lightning:free",
+            correlationId: "cid_user_snippet",
+            taskType: "command_center",
+            latencyMs: 120,
+            retries: 0,
+          };
+        });
+
+        const res = await request(app)
+          .post("/api/ai/command-center")
+          .set("Authorization", `Bearer ${token}`)
+          .send({ question: "Are there any leads stuck without audio in Vigilance?" });
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.data.answer.startsWith("{")).toBe(false);
+        expect(res.body.data.answer).toContain("Leads in Vigilance Without Audio Recording");
+        expect(res.body.data.answer).not.toContain('"answer":');
+        expect(res.body.data.toolsUsed).toContain("get_vigilance_leads_without_audio");
+        expect(res.body.data.toolsUsed).toContain("get_vigilance_audio_status_summary");
+        expect(res.body.data.suggestedFollowUps).toHaveLength(2);
+      });
+    });
   });
 });
