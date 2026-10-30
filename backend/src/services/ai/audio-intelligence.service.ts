@@ -1,16 +1,17 @@
 import crypto from "crypto";
-import fs from "fs";
-import path from "path";
 import mongoose from "mongoose";
 import { z } from "zod";
 import { ILead } from "../../models/Lead.model";
 import { AiAnalysis } from "../../models/AiAnalysis.model";
-import { callGemini, parseGeminiJson } from "./gemini.provider";
+import { Transcription, ITranscription } from "../../models/Transcription.model";
+import { TranscriptionJobService } from "../transcription-job.service";
+import { DeepgramService } from "../deepgram.service";
+import { callOpenRouter, stripInternalReasoning } from "./openrouter.provider";
 import { logAiAudit } from "./ai-audit.service";
-import { geminiEnv, isGeminiConfigured, GeminiConfigError } from "../../config/gemini";
+import { openRouterEnv, isOpenRouterConfigured } from "../../config/openrouter";
+import { isDeepgramConfigured } from "../../config/deepgram";
 import { IAuthUser } from "../../types/auth.types";
 import { logger } from "../../config/logger";
-import { env } from "../../config/env";
 
 export const AudioIntelligenceSchema = z.object({
   transcription: z.string().min(1),
@@ -21,7 +22,7 @@ export const AudioIntelligenceSchema = z.object({
       timestamp: z.string().optional(),
     })
   ),
-  summary: z.string().max(1200),
+  summary: z.string().max(2000),
   customerRequirements: z.array(z.string()),
   objections: z.array(z.string()),
   commitments: z.array(z.string()),
@@ -34,7 +35,7 @@ export const AudioIntelligenceSchema = z.object({
   ]),
   uncertainPassages: z.array(z.string()),
   audioDurationSeconds: z.number().optional(),
-  calculationMethod: z.literal("gemini_multimodal_audio"),
+  calculationMethod: z.string().default("deepgram_nova3"),
   analysisTimestamp: z.string(),
   disclaimer: z.string(),
 });
@@ -43,84 +44,45 @@ export type AudioIntelligenceResult = z.infer<typeof AudioIntelligenceSchema>;
 
 export class AudioIntelligenceService {
   /**
-   * Helper to retrieve audio as base64 string from Cloudinary CDN or local filesystem
+   * Helper to format a completed Transcription record into an AudioIntelligenceResult
    */
-  private static async getAudioBase64AndMime(lead: ILead): Promise<{
-    data: string;
-    mimeType: string;
-    fileSize: number;
-  }> {
-    const audioMeta = lead.vigilanceDetails?.audio;
-    if (!audioMeta || !audioMeta.url) {
-      throw new Error("No call recording audio is attached to this lead.");
-    }
+  private static formatResultFromJob(job: ITranscription): AudioIntelligenceResult {
+    const speakerSegments = (job.utterances || []).map((u) => {
+      const startMin = Math.floor(u.start / 60);
+      const startSec = Math.floor(u.start % 60);
+      const timeStr = `${String(startMin).padStart(2, "0")}:${String(startSec).padStart(2, "0")}`;
+      return {
+        speaker: typeof u.speaker === "number" ? `Speaker ${u.speaker}` : "Unknown",
+        text: u.transcript,
+        timestamp: timeStr,
+      };
+    });
 
-    const mimeType = audioMeta.mimeType || "audio/mpeg";
+    const ai = job.aiAnalysis;
+    const validOutcomes = ["meeting_confirmed", "follow_up_needed", "rescheduled", "inconclusive"];
+    const outcome = validOutcomes.includes(ai?.callOutcome || "")
+      ? (ai?.callOutcome as "meeting_confirmed" | "follow_up_needed" | "rescheduled" | "inconclusive")
+      : "inconclusive";
 
-    // Case 1: Remote Cloudinary or HTTPS URL
-    if (audioMeta.url.startsWith("http://") || audioMeta.url.startsWith("https://")) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 25000);
-
-      try {
-        const res = await fetch(audioMeta.url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch audio from storage provider (HTTP ${res.status}).`);
-        }
-
-        const arrayBuffer = await res.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
-        if (buffer.length > env.MAX_AUDIO_FILE_SIZE) {
-          throw new Error(
-            `Audio file size (${(buffer.length / 1024 / 1024).toFixed(1)}MB) exceeds maximum permitted limit (${(env.MAX_AUDIO_FILE_SIZE / 1024 / 1024).toFixed(0)}MB).`
-          );
-        }
-
-        return {
-          data: buffer.toString("base64"),
-          mimeType,
-          fileSize: buffer.length,
-        };
-      } catch (fetchErr: any) {
-        clearTimeout(timeoutId);
-        logger.error({ err: fetchErr?.message, url: audioMeta.url }, "Audio CDN fetch failed");
-        throw new Error(`Unable to download audio for transcription: ${fetchErr?.message}`);
-      }
-    }
-
-    // Case 2: Local file fallback
-    const possiblePaths = [
-      audioMeta.storagePath,
-      path.join(process.cwd(), audioMeta.storagePath),
-      path.join(process.cwd(), "uploads", audioMeta.fileName),
-      path.join(process.cwd(), "..", "public", "audio", audioMeta.fileName),
-    ];
-
-    for (const p of possiblePaths) {
-      if (p && fs.existsSync(p)) {
-        const stats = fs.statSync(p);
-        if (stats.size > env.MAX_AUDIO_FILE_SIZE) {
-          throw new Error(`Audio file exceeds limit.`);
-        }
-        const buffer = fs.readFileSync(p);
-        return {
-          data: buffer.toString("base64"),
-          mimeType,
-          fileSize: stats.size,
-        };
-      }
-    }
-
-    throw new Error(
-      `Audio recording file could not be located on CDN or local disk (${audioMeta.fileName}).`
-    );
+    return {
+      transcription: job.fullTranscript || "",
+      speakerSegments,
+      summary: ai?.summary || "Audio recording transcribed successfully via Deepgram Nova-3.",
+      customerRequirements: ai?.customerInterestAndIntent ? [ai.customerInterestAndIntent] : [],
+      objections: ai?.customerObjections || [],
+      commitments: ai?.commitments || [],
+      nextSteps: ai?.suggestedNextActions || [],
+      callOutcome: outcome,
+      uncertainPassages: [],
+      audioDurationSeconds: job.audioDurationSeconds || 0,
+      calculationMethod: "deepgram_nova3",
+      analysisTimestamp: job.processingCompletedAt?.toISOString() || new Date().toISOString(),
+      disclaimer: "Speech transcription powered by Deepgram Nova-3 and OpenRouter in VA Nexus.",
+    };
   }
 
   /**
-   * Transcribe and analyze audio recording using Gemini multimodal input
+   * Transcribe and analyze audio recording using Deepgram Nova-3 + OpenRouter
    */
   static async transcribeLeadAudio(
     lead: ILead,
@@ -129,138 +91,79 @@ export class AudioIntelligenceService {
   ): Promise<AudioIntelligenceResult> {
     const correlationId = crypto.randomUUID();
 
-    // Idempotent caching: check if recent completed transcription exists
+    const audioMeta = lead.vigilanceDetails?.audio;
+    if (!audioMeta || !audioMeta.url) {
+      throw new Error("No call recording audio is attached to this lead.");
+    }
+
+    // 1. Check for existing cached completed job in Transcription collection
     if (!options.force) {
-      const existing = await AiAnalysis.findOne({
-        sourceRecordId: lead._id,
-        taskType: "audio_transcription",
-        state: "completed",
+      const existingJob = await Transcription.findOne({
+        leadId: lead._id,
+        status: "COMPLETED",
       }).sort({ createdAt: -1 });
 
-      if (existing && existing.result) {
-        return existing.result as unknown as AudioIntelligenceResult;
+      if (existingJob && existingJob.fullTranscript) {
+        return this.formatResultFromJob(existingJob);
       }
     }
 
-    if (!isGeminiConfigured() || !geminiEnv.AI_FEATURES_ENABLED) {
-      throw new GeminiConfigError(
-        "Gemini AI is not configured on the server. Please configure GEMINI_API_KEY in the server environment to transcribe call audio."
-      );
+    // 2. Run Deepgram transcription directly or through job worker
+    const { job, alreadyCompleted } = await TranscriptionJobService.createOrGetJob(lead, user, options);
+
+    let completedJob: ITranscription | null = job;
+    if (!alreadyCompleted || job.status !== "COMPLETED") {
+      // Process synchronously if not completed yet
+      completedJob = await TranscriptionJobService.processJob(job._id.toString());
+      if (!completedJob || completedJob.status !== "COMPLETED") {
+        throw new Error(
+          completedJob?.failureReason ||
+            "Call recording transcription is processing in background. Please check status in a moment."
+        );
+      }
     }
 
+    // 3. If AI insights analysis is not yet done and OpenRouter is configured, trigger OpenRouter analysis
+    if (!completedJob.aiAnalysis && isOpenRouterConfigured() && openRouterEnv.AI_FEATURES_ENABLED) {
+      try {
+        completedJob = await TranscriptionJobService.analyzeTranscriptWithOpenRouter(lead._id.toString(), user);
+      } catch (err: any) {
+        logger.warn({ err: err?.message, leadId: lead._id }, "OpenRouter call analysis skipped during audio transcription");
+      }
+    }
+
+    const result = this.formatResultFromJob(completedJob);
+
+    // Also persist into AiAnalysis collection for backward compatibility
     const requestedByObjectId = mongoose.Types.ObjectId.isValid(user.id)
       ? new mongoose.Types.ObjectId(user.id)
       : new mongoose.Types.ObjectId("000000000000000000000000");
 
-    const analysisRecord = await AiAnalysis.create({
+    await AiAnalysis.create({
       sourceRecordId: lead._id,
       sourceModel: "Lead",
       taskType: "audio_transcription",
-      aiModel: geminiEnv.GEMINI_MODEL,
+      aiModel: "deepgram-nova-3",
       correlationId,
-      state: "processing",
+      state: "completed",
+      result: result as unknown as Record<string, unknown>,
       requestedBy: requestedByObjectId,
       requestedByRole: user.role,
-      expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
+      expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
     });
 
-    try {
-      // 1. Fetch audio payload
-      const audioPayload = await this.getAudioBase64AndMime(lead);
+    await logAiAudit({
+      correlationId,
+      userId: user.id,
+      userRole: user.role,
+      action: "audio_transcription",
+      taskType: "audio_transcription",
+      model: "deepgram-nova-3",
+      resourceId: lead._id.toString(),
+      state: "success",
+    });
 
-      // 2. Prepare multimodal prompt
-      const systemInstruction = `You are the Audio & Speech Intelligence engine for VA Nexus (Venture Automation Nexus).
-You analyze genuine voice recordings of customer qualification and vigilance verification calls.
-Strict Transcription & Analysis Rules:
-- Provide an accurate transcription with speaker diarization (e.g. Officer vs Customer).
-- Clearly timestamp speaker turns if audible.
-- If words or phrases are inaudible, label them as '[inaudible]' or '[uncertain]' and include in 'uncertainPassages'. Never fabricate words or conversation.
-- Extract customer requirements, stated objections, commitments, and the primary call outcome.
-- Return ONLY valid JSON adhering strictly to the required schema.`;
-
-      const prompt = `Please transcribe this call recording for Lead ${lead.leadCode} (${lead.name}) and extract structured conversation intelligence.
-
-Return JSON with exact schema:
-{
-  "transcription": "string (full text dialogue)",
-  "speakerSegments": [
-    { "speaker": "string", "text": "string", "timestamp": "string" }
-  ],
-  "summary": "string (concise 2-3 paragraph summary)",
-  "customerRequirements": ["string"],
-  "objections": ["string"],
-  "commitments": ["string"],
-  "nextSteps": ["string"],
-  "callOutcome": "meeting_confirmed" | "follow_up_needed" | "rescheduled" | "inconclusive",
-  "uncertainPassages": ["string"],
-  "audioDurationSeconds": number,
-  "calculationMethod": "gemini_multimodal_audio",
-  "analysisTimestamp": "${new Date().toISOString()}",
-  "disclaimer": "AI-generated transcription from call recording in VA Nexus. Review alongside original audio."
-}`;
-
-      // 3. Multimodal call to Gemini
-      const response = await callGemini({
-        prompt,
-        audioData: {
-          mimeType: audioPayload.mimeType,
-          data: audioPayload.data,
-        },
-        systemInstruction,
-        correlationId,
-        taskType: "audio_transcription",
-      });
-
-      const parsed = parseGeminiJson<unknown>(response.text, correlationId);
-      const validated = AudioIntelligenceSchema.parse(parsed);
-
-      await AiAnalysis.findByIdAndUpdate(analysisRecord._id, {
-        state: "completed",
-        result: validated as Record<string, unknown>,
-        latencyMs: response.latencyMs,
-      });
-
-      await logAiAudit({
-        correlationId,
-        userId: user.id,
-        userRole: user.role,
-        action: "audio_transcription",
-        taskType: "audio_transcription",
-        model: response.model,
-        resourceId: lead._id.toString(),
-        latencyMs: response.latencyMs,
-        state: "success",
-      });
-
-      return validated;
-    } catch (err: any) {
-      logger.error(
-        { err: err?.message, correlationId, leadId: lead._id },
-        "Gemini audio transcription failed"
-      );
-
-      await AiAnalysis.findByIdAndUpdate(analysisRecord._id, {
-        state: "failed",
-        error: { message: err?.message || "Audio processing failed", code: err?.name },
-      });
-
-      await logAiAudit({
-        correlationId,
-        userId: user.id,
-        userRole: user.role,
-        action: "audio_transcription_error",
-        taskType: "audio_transcription",
-        model: geminiEnv.GEMINI_MODEL,
-        resourceId: lead._id.toString(),
-        state: "failure",
-        errorCode: err?.name,
-      });
-
-      throw new Error(
-        err?.message ||
-          "Failed to transcribe audio recording with Gemini AI. Please verify the audio file and server configuration, then try again."
-      );
-    }
+    return result;
   }
 
   /**
@@ -270,15 +173,26 @@ Return JSON with exact schema:
     const filterId = mongoose.Types.ObjectId.isValid(leadId)
       ? new mongoose.Types.ObjectId(leadId)
       : leadId;
-    const existing = await AiAnalysis.findOne({
+
+    const existingJob = await Transcription.findOne({
+      leadId: filterId,
+      status: "COMPLETED",
+    }).sort({ createdAt: -1 });
+
+    if (existingJob && existingJob.fullTranscript) {
+      return this.formatResultFromJob(existingJob);
+    }
+
+    const existingAnalysis = await AiAnalysis.findOne({
       sourceRecordId: filterId,
       taskType: "audio_transcription",
       state: "completed",
     }).sort({ createdAt: -1 });
 
-    if (existing && existing.result) {
-      return existing.result as unknown as AudioIntelligenceResult;
+    if (existingAnalysis && existingAnalysis.result) {
+      return existingAnalysis.result as unknown as AudioIntelligenceResult;
     }
+
     return null;
   }
 }

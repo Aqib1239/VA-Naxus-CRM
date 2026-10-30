@@ -42,6 +42,10 @@ export interface AudioPlayerProps {
   className?: string;
   /** When true, allows fallback to synthetic demo audio if file is missing (default false for real leads) */
   allowDemoFallback?: boolean;
+  /** Optional target timestamp in seconds to seek to */
+  targetSeekTime?: number | null;
+  /** Optional callback fired on playback time updates */
+  onTimeUpdate?: (currentTime: number) => void;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -147,13 +151,20 @@ export function AudioPlayer({
   file,
   className,
   allowDemoFallback = false,
+  targetSeekTime,
+  onTimeUpdate,
 }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const rafRef = useRef<number | null>(null);
   const maxReachedRef = useRef(0);
   const onNaturalEndRef = useRef(onNaturalEnd);
+  const onTimeUpdateRef = useRef(onTimeUpdate);
   const previousVolumeRef = useRef(1);
   const isFallbackActiveRef = useRef(false);
+
+  useEffect(() => {
+    onTimeUpdateRef.current = onTimeUpdate;
+  }, [onTimeUpdate]);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
@@ -284,7 +295,10 @@ export function AudioPlayer({
       setIsBuffering(false);
     };
 
-    const onTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const onTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+      onTimeUpdateRef.current?.(audio.currentTime);
+    };
 
     const onEnded = () => {
       setIsPlaying(false);
@@ -374,6 +388,13 @@ export function AudioPlayer({
     },
     [limitSeek]
   );
+
+  useEffect(() => {
+    if (typeof targetSeekTime === "number" && isFinite(targetSeekTime) && audioRef.current) {
+      seekTo(targetSeekTime);
+      audioRef.current.play().catch(() => {});
+    }
+  }, [targetSeekTime, seekTo]);
 
   const handleRestart = useCallback(async () => {
     const audio = audioRef.current;

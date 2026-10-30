@@ -10,7 +10,6 @@ import { AudioIntelligenceService } from "../services/ai/audio-intelligence.serv
 import { AiAuditLog } from "../models/AiAuditLog.model";
 import { ApiResponse } from "../utils/response";
 import { env } from "../config/env";
-import { isGeminiConfigured } from "../config/gemini";
 import { isOpenRouterConfigured } from "../config/openrouter";
 import { logger } from "../config/logger";
 
@@ -36,7 +35,6 @@ export class AiController {
    */
   static async aiHealth(req: Request, res: Response, next: NextFunction) {
     try {
-      const configured = isGeminiConfigured();
       const openRouterConfigured = isOpenRouterConfigured();
       return ApiResponse.success(
         res,
@@ -44,12 +42,9 @@ export class AiController {
           aiFeaturesEnabled: env.AI_FEATURES_ENABLED,
           isOpenRouterConfigured: openRouterConfigured,
           openRouterModel: env.OPENROUTER_MODEL,
-          isGeminiConfigured: configured,
-          activeModel: env.OPENROUTER_MODEL || env.GEMINI_MODEL,
-          geminiModel: env.GEMINI_MODEL,
-          embeddingModel: env.GEMINI_EMBEDDING_MODEL,
-          maxRetries: env.GEMINI_MAX_RETRIES,
-          timeoutMs: env.GEMINI_TIMEOUT_MS,
+          activeModel: env.OPENROUTER_MODEL,
+          timeoutMs: env.OPENROUTER_TIMEOUT_MS,
+          maxRetries: env.OPENROUTER_MAX_RETRIES,
           monthlyBudgetUSD: env.AI_MONTHLY_BUDGET_USD,
         },
         "AI service status retrieved successfully."

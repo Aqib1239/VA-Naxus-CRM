@@ -3,9 +3,9 @@ import mongoose from "mongoose";
 import { z } from "zod";
 import { ILead } from "../../models/Lead.model";
 import { AiAnalysis } from "../../models/AiAnalysis.model";
-import { callGemini, parseGeminiJson } from "./gemini.provider";
+import { callOpenRouter, parseOpenRouterJson } from "./openrouter.provider";
 import { logAiAudit } from "./ai-audit.service";
-import { geminiEnv, isGeminiConfigured } from "../../config/gemini";
+import { openRouterEnv, isOpenRouterConfigured } from "../../config/openrouter";
 import { IAuthUser } from "../../types/auth.types";
 import { logger } from "../../config/logger";
 import { DEPARTMENTS } from "../../constants/departments";
@@ -30,7 +30,7 @@ export const SupportCopilotSchema = z.object({
   summary: z.string().max(800),
   readyForAllocation: z.boolean(),
   disclaimer: z.string(),
-  calculationMethod: z.enum(["gemini_synthesized", "deterministic_checklist"]),
+  calculationMethod: z.enum(["openrouter_synthesized", "deterministic_checklist"]),
 });
 
 export type SupportCopilotResult = z.infer<typeof SupportCopilotSchema>;
@@ -116,7 +116,7 @@ export class SupportCopilotService {
     const correlationId = crypto.randomUUID();
     const fallback = this.generateDeterministicChecklist(lead);
 
-    if (!isGeminiConfigured() || !geminiEnv.AI_FEATURES_ENABLED) {
+    if (!isOpenRouterConfigured() || !openRouterEnv.AI_FEATURES_ENABLED) {
       return fallback;
     }
 
@@ -128,7 +128,7 @@ export class SupportCopilotService {
       sourceRecordId: lead._id,
       sourceModel: "Lead",
       taskType: "support_copilot",
-      aiModel: geminiEnv.GEMINI_MODEL,
+      aiModel: openRouterEnv.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:free",
       correlationId,
       state: "processing",
       requestedBy: requestedByObjectId,
@@ -181,18 +181,21 @@ Return JSON with exact structure:
   ],
   "summary": string (max 500 chars),
   "readyForAllocation": boolean,
-  "disclaimer": "AI support guidance. Support coordinator must verify items prior to Sales queue allocation.",
-  "calculationMethod": "gemini_synthesized"
+  "disclaimer": "AI support guidance via OpenRouter (${openRouterEnv.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:free"}). Support coordinator must verify items prior to Sales queue allocation.",
+  "calculationMethod": "openrouter_synthesized"
 }`;
 
-      const response = await callGemini({
-        prompt,
-        systemInstruction,
+      const response = await callOpenRouter({
+        messages: [
+          { role: "system", content: systemInstruction },
+          { role: "user", content: prompt },
+        ],
         correlationId,
         taskType: "support_copilot",
+        temperature: 0.2,
       });
 
-      const parsed = parseGeminiJson<unknown>(response.text, correlationId);
+      const parsed = parseOpenRouterJson<unknown>(response.content, correlationId);
       const validated = SupportCopilotSchema.parse(parsed);
 
       await AiAnalysis.findByIdAndUpdate(analysisRecord._id, {
@@ -217,7 +220,7 @@ Return JSON with exact structure:
     } catch (err: any) {
       logger.warn(
         { err: err?.message, correlationId, leadId: lead._id },
-        "Support copilot Gemini evaluation failed; returning deterministic checklist"
+        "Support copilot OpenRouter evaluation failed; returning deterministic checklist"
       );
 
       await AiAnalysis.findByIdAndUpdate(analysisRecord._id, {
@@ -228,7 +231,7 @@ Return JSON with exact structure:
       return {
         ...fallback,
         calculationMethod: "deterministic_checklist",
-        disclaimer: `Deterministic checklist audit based on CRM records (Gemini synthesis unavailable: ${err?.message || "offline"}). Support coordinator must verify items prior to Sales queue allocation.`,
+        disclaimer: `Deterministic checklist audit based on CRM records (OpenRouter synthesis unavailable: ${err?.message || "offline"}). Support coordinator must verify items prior to Sales queue allocation.`,
       };
     }
   }

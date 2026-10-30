@@ -308,6 +308,7 @@ export default function LeadDetailPage() {
           <AudioIntelligencePanel
             leadId={lead.id}
             hasAudio={Boolean(lead.vigilanceDetails?.audio)}
+            audioUrl={lead.vigilanceDetails?.audio?.url}
           />
 
           {/* Role-Specific AI Copilots */}

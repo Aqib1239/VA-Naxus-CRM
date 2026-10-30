@@ -3,6 +3,7 @@ import { env } from "./config/env";
 import { logger } from "./config/logger";
 import { connectDatabase, disconnectDatabase } from "./config/database";
 import { seedDatabaseIfEmpty } from "./scripts/seed";
+import { TranscriptionJobService } from "./services/transcription-job.service";
 
 let server: any = null;
 
@@ -16,7 +17,10 @@ async function startServer() {
       await seedDatabaseIfEmpty();
     }
 
-    // 3. Start listening
+    // 3. Start background transcription worker loop
+    TranscriptionJobService.startBackgroundWorker();
+
+    // 4. Start listening
     server = app.listen(env.PORT, () => {
       logger.info(`=======================================================`);
       logger.info(`🚀 VibhAnu CRM Backend API running on port ${env.PORT}`);
@@ -26,9 +30,10 @@ async function startServer() {
       logger.info(`=======================================================`);
     });
 
-    // 4. Handle Process Signals for Graceful Shutdown
+    // 5. Handle Process Signals for Graceful Shutdown
     const handleShutdown = async (signal: string) => {
       logger.info(`Received ${signal}. Starting graceful shutdown...`);
+      TranscriptionJobService.stopBackgroundWorker();
 
       if (server) {
         server.close(async () => {

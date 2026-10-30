@@ -3,15 +3,15 @@ import mongoose from "mongoose";
 import { z } from "zod";
 import { ILead } from "../../models/Lead.model";
 import { AiAnalysis } from "../../models/AiAnalysis.model";
-import { callGemini, parseGeminiJson } from "./gemini.provider";
+import { callOpenRouter, parseOpenRouterJson } from "./openrouter.provider";
 import { logAiAudit } from "./ai-audit.service";
-import { geminiEnv, isGeminiConfigured, GeminiConfigError } from "../../config/gemini";
+import { openRouterEnv, isOpenRouterConfigured, OpenRouterConfigError } from "../../config/openrouter";
 import { IAuthUser } from "../../types/auth.types";
 import { logger } from "../../config/logger";
 
 export const SalesCopilotSchema = z.object({
-  talkingPoints: z.array(z.string()).max(6),
-  followUpDraft: z.string().max(1200),
+  talkingPoints: z.array(z.string()).max(10),
+  followUpDraft: z.string().max(3000),
   objectionHandling: z
     .array(
       z.object({
@@ -19,8 +19,8 @@ export const SalesCopilotSchema = z.object({
         response: z.string(),
       })
     )
-    .max(5),
-  callScript: z.string().max(1800),
+    .max(10),
+  callScript: z.string().max(3000),
   recommendedNextAction: z.object({
     action: z.string(),
     rationale: z.string(),
@@ -28,7 +28,7 @@ export const SalesCopilotSchema = z.object({
   }),
   disclaimer: z.string(),
   requiresApproval: z.literal(true),
-  calculationMethod: z.literal("gemini_synthesized"),
+  calculationMethod: z.string().default("openrouter_synthesized"),
 });
 
 export type SalesCopilotResult = z.infer<typeof SalesCopilotSchema>;
@@ -37,9 +37,9 @@ export class SalesCopilotService {
   static async generateForLead(lead: ILead, user: IAuthUser): Promise<SalesCopilotResult> {
     const correlationId = crypto.randomUUID();
 
-    if (!isGeminiConfigured() || !geminiEnv.AI_FEATURES_ENABLED) {
-      throw new GeminiConfigError(
-        "Gemini AI is not configured on the server. Please configure GEMINI_API_KEY to generate live sales copilot intelligence."
+    if (!isOpenRouterConfigured() || !openRouterEnv.AI_FEATURES_ENABLED) {
+      throw new OpenRouterConfigError(
+        "OpenRouter AI is not configured on the server. Please configure OPENROUTER_API_KEY in backend/.env to generate live sales copilot intelligence."
       );
     }
 
@@ -51,7 +51,7 @@ export class SalesCopilotService {
       sourceRecordId: lead._id,
       sourceModel: "Lead",
       taskType: "sales_copilot",
-      aiModel: geminiEnv.GEMINI_MODEL,
+      aiModel: openRouterEnv.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:free",
       correlationId,
       state: "processing",
       requestedBy: requestedByObjectId,
@@ -63,57 +63,67 @@ export class SalesCopilotService {
       const sanitizedContext = {
         leadCode: lead.leadCode,
         leadName: lead.name,
-        city: lead.city,
-        state: lead.state,
-        meetingDate: lead.date,
-        meetingTime: lead.time,
-        communicationNotes: lead.communicationDetails?.meetingNotes,
-        vigilanceNotes: lead.vigilanceDetails?.verificationNotes,
-        hasAudio: Boolean(lead.vigilanceDetails?.audio),
-        supportNotes: lead.supportDetails?.allocationNotes,
+        contactNumber: lead.contactNumber || "Not provided",
+        city: lead.city || "Not provided",
+        state: lead.state || "Not provided",
+        postalAddress: lead.postalAddress || "Not provided",
+        meetingDate: lead.date || "Not scheduled",
+        meetingTime: lead.time || "Not scheduled",
+        remark: lead.remark || "None",
+        communicationNotes: lead.communicationDetails?.meetingNotes || "None recorded",
+        vigilanceNotes: lead.vigilanceDetails?.verificationNotes || "None recorded",
+        hasAudioRecording: Boolean(lead.vigilanceDetails?.audio?.url),
+        supportNotes: lead.supportDetails?.allocationNotes || "None recorded",
+        supportChecklist: lead.supportDetails?.verification || null,
         dealValueEstimate: lead.salesDetails?.dealValue || null,
         currentStage: lead.currentDepartment,
         status: lead.status,
       };
 
-      const systemInstruction = `You are the Sales Copilot for VA Nexus (Venture Automation Nexus - Connect. Automate. Accelerate.).
-Generate tailored, high-converting B2B sales talking points, objection handling, follow-up messages, and phone scripts for executive closers.
-Constraints:
+      const systemInstruction = `You are the Executive Sales Copilot for VA Nexus (Venture Automation Nexus - Connect. Automate. Accelerate.).
+Generate tailored, high-converting B2B sales talking points, objection handling, personalized follow-up message draft, and telephone call opening scripts for executive sales closers.
+
+Strict Rules:
 - You must require user approval before sending (requiresApproval: true).
 - Never claim an outreach email or message has already been dispatched.
-- Ground talking points strictly on the verified customer data provided.
-- Return ONLY valid JSON matching the requested schema.`;
+- Ground all collateral strictly on the actual lead data available in MongoDB. Do not invent customer information, requirements, or activity.
+- If information is missing, clearly indicate that it is unavailable.
+- Return ONLY valid JSON matching the exact schema specified.`;
 
       const prompt = `Generate customized sales copilot collateral for this prospect:
 ${JSON.stringify(sanitizedContext, null, 2)}
 
 Return JSON with exact structure:
 {
-  "talkingPoints": ["point 1", "point 2"],
-  "followUpDraft": "string (personalized email/message draft ready for sales rep review)",
-  "objectionHandling": [
-    { "objection": "string", "response": "string" }
+  "talkingPoints": [
+    "Key talking point tailored to lead requirements and verified details"
   ],
-  "callScript": "string (custom opening call script for this prospect)",
+  "followUpDraft": "Personalized message draft ready for sales rep review and transmission.",
+  "objectionHandling": [
+    { "objection": "Likely objection based on industry/notes", "response": "Actionable value-driven counter" }
+  ],
+  "callScript": "Custom opening call script for sales closing conversation with this prospect.",
   "recommendedNextAction": {
-    "action": "string",
-    "rationale": "string",
-    "timing": "string"
+    "action": "Immediate recommended sales action",
+    "rationale": "Clear strategic rationale grounded in lead status",
+    "timing": "Recommended execution timing (e.g. Immediate / Next business morning)"
   },
-  "disclaimer": "AI-generated draft in VA Nexus. Sales executive must review, customize, and approve before sending.",
+  "disclaimer": "AI-generated sales draft in VA Nexus via OpenRouter (${openRouterEnv.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:free"}). Sales executive must review, customize, and approve before sending.",
   "requiresApproval": true,
-  "calculationMethod": "gemini_synthesized"
+  "calculationMethod": "openrouter_synthesized"
 }`;
 
-      const response = await callGemini({
-        prompt,
-        systemInstruction,
+      const response = await callOpenRouter({
+        messages: [
+          { role: "system", content: systemInstruction },
+          { role: "user", content: prompt },
+        ],
         correlationId,
         taskType: "sales_copilot",
-        temperature: 0.25,
+        temperature: 0.2,
       });
 
-      const parsed = parseGeminiJson<unknown>(response.text, correlationId);
+      const parsed = parseOpenRouterJson<unknown>(response.content, correlationId);
       const validated = SalesCopilotSchema.parse(parsed);
 
       await AiAnalysis.findByIdAndUpdate(analysisRecord._id, {
@@ -138,7 +148,7 @@ Return JSON with exact structure:
     } catch (err: any) {
       logger.error(
         { err: err?.message, correlationId, leadId: lead._id },
-        "Sales copilot Gemini generation failed"
+        "Sales copilot OpenRouter generation failed"
       );
 
       await AiAnalysis.findByIdAndUpdate(analysisRecord._id, {
@@ -152,7 +162,7 @@ Return JSON with exact structure:
         userRole: user.role,
         action: "sales_copilot_error",
         taskType: "sales_copilot",
-        model: geminiEnv.GEMINI_MODEL,
+        model: openRouterEnv.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:free",
         resourceId: lead._id.toString(),
         state: "failure",
         errorCode: err?.name,
@@ -160,7 +170,7 @@ Return JSON with exact structure:
 
       throw new Error(
         err?.message ||
-          "Unable to generate Sales Copilot advice. Please check your Gemini AI configuration and try again."
+          "Unable to generate Sales Copilot advice. Please check your OpenRouter AI configuration and try again."
       );
     }
   }

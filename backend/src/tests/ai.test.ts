@@ -22,14 +22,55 @@ import {
   OpenRouterConfigError,
 } from "../config/openrouter";
 
-// Mock the OpenRouter Provider for Command Center
+// Mock the OpenRouter Provider for all AI features (Command Center, Sales Copilot, Intelligence)
 jest.mock("../services/ai/openrouter.provider", () => {
   const actual = jest.requireActual("../services/ai/openrouter.provider");
   return {
     ...actual,
     callOpenRouter: jest.fn(async (params) => {
-      const { messages = [], correlationId } = params || {};
+      const { messages = [], correlationId, taskType } = params || {};
       const lastUserMsg = messages[messages.length - 1]?.content || "";
+
+      if (taskType === "sales_copilot") {
+        return {
+          content: JSON.stringify({
+            talkingPoints: ["Discuss enterprise deployment SLA", "Review verified appointment slot"],
+            followUpDraft: "Thank you for confirming your requirements with VA Nexus.",
+            objectionHandling: [{ objection: "Budget constraints", response: "We offer flexible tiered pricing." }],
+            callScript: "Hello, this is Aditya from VA Nexus regarding your enterprise lead.",
+            recommendedNextAction: { action: "Conduct closing presentation", rationale: "Stage ready", timing: "Immediate" },
+            disclaimer: "AI-generated draft in VA Nexus via OpenRouter.",
+            requiresApproval: true,
+            calculationMethod: "openrouter_synthesized",
+          }),
+          model: "nvidia/nemotron-3.5-lightning:free",
+          correlationId: correlationId || "test_cid",
+          taskType,
+          latencyMs: 15,
+          retries: 0,
+        };
+      }
+
+      if (taskType === "call_transcript_analysis") {
+        return {
+          content: JSON.stringify({
+            summary: "Qualification call confirmed appointment date and time in Mumbai.",
+            customerObjections: [],
+            customerInterestAndIntent: "Enterprise security SLA",
+            agentCommunicationQuality: "Clear and professional",
+            unansweredQuestions: [],
+            commitments: ["Meeting confirmed for Nov 5"],
+            suggestedNextActions: ["Support allocation"],
+            callOutcome: "meeting_confirmed",
+          }),
+          model: "nvidia/nemotron-3.5-lightning:free",
+          correlationId: correlationId || "test_cid",
+          taskType,
+          latencyMs: 20,
+          retries: 0,
+        };
+      }
+
       let answer = "There is currently 1 lead in the pipeline for your authorized scope in VA Nexus.";
       let toolsUsed = ["get_stage_counts"];
 
@@ -65,67 +106,25 @@ jest.mock("../config/openrouter", () => {
   };
 });
 
-jest.mock("../config/gemini", () => {
-  const actual = jest.requireActual("../config/gemini");
-  return {
-    ...actual,
-    isGeminiConfigured: jest.fn(() => true),
-  };
-});
-
-// Mock the Gemini Provider for other copilot routes
-jest.mock("../services/ai/gemini.provider", () => {
-  const actual = jest.requireActual("../services/ai/gemini.provider");
-  return {
-    ...actual,
-    callGemini: jest.fn(async (params) => {
-      const { taskType, correlationId } = params || {};
-      if (taskType === "sales_copilot") {
-        return {
-          text: JSON.stringify({
-            talkingPoints: ["Discuss enterprise deployment SLA", "Review verified appointment slot"],
-            followUpDraft: "Thank you for confirming your requirements with VA Nexus.",
-            objectionHandling: [{ objection: "Budget constraints", response: "We offer flexible tiered pricing." }],
-            callScript: "Hello, this is Aditya from VA Nexus regarding your enterprise lead.",
-            recommendedNextAction: { action: "Conduct closing presentation", rationale: "Stage ready", timing: "Immediate" },
-            disclaimer: "AI-generated draft in VA Nexus.",
-            requiresApproval: true,
-            calculationMethod: "gemini_synthesized",
-          }),
-          model: "gemini-3.8-flash",
-          correlationId: correlationId || "test_cid",
-          taskType,
-          latencyMs: 15,
-          retries: 0,
-        };
-      }
-      if (taskType === "audio_transcription") {
-        return {
-          text: JSON.stringify({
-            transcription: "[Officer]: Hello, am I speaking with Acme Industrial Corp?\n[Customer]: Yes, confirmed.",
-            speakerSegments: [{ speaker: "Officer", text: "Hello, am I speaking with Acme Industrial Corp?", timestamp: "00:02" }],
-            summary: "Qualification call confirmed appointment date and time in Mumbai.",
-            customerRequirements: ["Enterprise security SLA"],
-            objections: [],
-            commitments: ["Meeting confirmed for Nov 5"],
-            nextSteps: ["Support allocation"],
-            callOutcome: "meeting_confirmed",
-            uncertainPassages: [],
-            calculationMethod: "gemini_multimodal_audio",
-            analysisTimestamp: new Date().toISOString(),
-            disclaimer: "AI-generated transcription from call recording in VA Nexus.",
-          }),
-          model: "gemini-3.8-flash",
-          correlationId: correlationId || "test_cid",
-          taskType,
-          latencyMs: 20,
-          retries: 0,
-        };
-      }
-      return actual.callGemini({ taskType, correlationId });
-    }),
-  };
-});
+// Mock Deepgram for audio transcription
+jest.mock("../services/deepgram.service", () => ({
+  DeepgramService: {
+    transcribeAudioUrl: jest.fn(async () => ({
+      fullTranscript: "Hello, am I speaking with Acme Industrial Corp? Yes, confirmed.",
+      confidence: 0.96,
+      audioDurationSeconds: 45,
+      paragraphs: [],
+      utterances: [
+        { speaker: 0, start: 0.5, end: 3.2, transcript: "Hello, am I speaking with Acme Industrial Corp?", confidence: 0.98 },
+        { speaker: 1, start: 3.5, end: 5.0, transcript: "Yes, confirmed.", confidence: 0.95 },
+      ],
+      words: [],
+      speakers: [{ speakerId: 0, role: "UNKNOWN" }, { speakerId: 1, role: "UNKNOWN" }],
+      detectedLanguage: "hi-en",
+    })),
+  },
+  isDeepgramConfigured: jest.fn(() => true),
+}));
 
 let mongoServer: MongoMemoryServer;
 const originalFetch = global.fetch;

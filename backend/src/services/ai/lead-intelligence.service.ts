@@ -3,10 +3,10 @@ import mongoose from "mongoose";
 import { z } from "zod";
 import { ILead } from "../../models/Lead.model";
 import { AiAnalysis } from "../../models/AiAnalysis.model";
-import { callGemini, parseGeminiJson } from "./gemini.provider";
+import { callOpenRouter, parseOpenRouterJson } from "./openrouter.provider";
 import { logAiAudit } from "./ai-audit.service";
 import { logger } from "../../config/logger";
-import { geminiEnv, isGeminiConfigured } from "../../config/gemini";
+import { openRouterEnv, isOpenRouterConfigured } from "../../config/openrouter";
 import { IAuthUser } from "../../types/auth.types";
 import { DEPARTMENTS, LEAD_STATUS } from "../../constants/departments";
 
@@ -33,7 +33,7 @@ export const LeadIntelligenceSchema = z.object({
     .max(6),
   inactivityDays: z.number().nullable(),
   inactivityRisk: z.enum(["high", "medium", "low", "none"]),
-  calculationMethod: z.enum(["gemini_synthesized", "deterministic_heuristic"]),
+  calculationMethod: z.enum(["openrouter_synthesized", "deterministic_heuristic"]),
   analysisTimestamp: z.string(),
   disclaimer: z.string(),
 });
@@ -229,14 +229,14 @@ export class LeadIntelligenceService {
   }
 
   /**
-   * Main analysis method with Gemini synthesis and automatic fallback
+   * Main analysis method with OpenRouter synthesis and automatic fallback
    */
   static async analyzeLead(lead: ILead, user: IAuthUser): Promise<LeadIntelligenceResult> {
     const correlationId = crypto.randomUUID();
     const baseline = this.calculateDeterministicBaseline(lead);
 
-    // If Gemini is not configured, safely return deterministic baseline
-    if (!isGeminiConfigured() || !geminiEnv.AI_FEATURES_ENABLED) {
+    // If OpenRouter is not configured, safely return deterministic baseline
+    if (!isOpenRouterConfigured() || !openRouterEnv.AI_FEATURES_ENABLED) {
       return baseline;
     }
 
@@ -248,7 +248,7 @@ export class LeadIntelligenceService {
       sourceRecordId: lead._id,
       sourceModel: "Lead",
       taskType: "lead_intelligence",
-      aiModel: geminiEnv.GEMINI_MODEL,
+      aiModel: openRouterEnv.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:free",
       correlationId,
       state: "processing",
       requestedBy: requestedByObjectId,
@@ -301,19 +301,22 @@ Return JSON with exact schema:
   ],
   "inactivityDays": number or null,
   "inactivityRisk": "high" | "medium" | "low" | "none",
-  "calculationMethod": "gemini_synthesized",
+  "calculationMethod": "openrouter_synthesized",
   "analysisTimestamp": "${new Date().toISOString()}",
-  "disclaimer": "AI-generated synthesis. Authorized user verification is recommended before taking consequential actions."
+  "disclaimer": "AI-generated synthesis via OpenRouter (${openRouterEnv.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:free"}). Authorized user verification is recommended before taking consequential actions."
 }`;
 
-      const response = await callGemini({
-        prompt,
-        systemInstruction,
+      const response = await callOpenRouter({
+        messages: [
+          { role: "system", content: systemInstruction },
+          { role: "user", content: prompt },
+        ],
         correlationId,
         taskType: "lead_intelligence",
+        temperature: 0.2,
       });
 
-      const parsed = parseGeminiJson<unknown>(response.text, correlationId);
+      const parsed = parseOpenRouterJson<unknown>(response.content, correlationId);
       const validated = LeadIntelligenceSchema.parse(parsed);
 
       await AiAnalysis.findByIdAndUpdate(analysisRecord._id, {
@@ -339,7 +342,7 @@ Return JSON with exact schema:
     } catch (err: any) {
       logger.warn(
         { err: err?.message, correlationId, leadId: lead._id },
-        "Gemini synthesis failed; returning deterministic baseline"
+        "OpenRouter synthesis failed; returning deterministic baseline"
       );
 
       await AiAnalysis.findByIdAndUpdate(analysisRecord._id, {
@@ -353,7 +356,7 @@ Return JSON with exact schema:
         userRole: user.role,
         action: "lead_intelligence_fallback",
         taskType: "lead_intelligence",
-        model: geminiEnv.GEMINI_MODEL,
+        model: openRouterEnv.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:free",
         resourceId: lead._id.toString(),
         state: "failure",
         errorCode: err?.name,
@@ -362,7 +365,7 @@ Return JSON with exact schema:
       return {
         ...baseline,
         calculationMethod: "deterministic_heuristic",
-        disclaimer: `Deterministic heuristic calculation based on CRM business rules (Gemini AI unavailable: ${err?.message || "synthesis failed"}).`,
+        disclaimer: `Deterministic heuristic calculation based on CRM business rules (OpenRouter AI unavailable: ${err?.message || "synthesis failed"}).`,
       };
     }
   }

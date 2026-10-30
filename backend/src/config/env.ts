@@ -51,17 +51,6 @@ const envSchema = z.object({
     .string()
     .default("4096")
     .transform((val) => parseInt(val, 10) || 4096),
-  GEMINI_API_KEY: z.string().default("").transform((val) => val || process.env.GEMINI_API_KEY || ""),
-  GEMINI_MODEL: z.string().default("gemini-3.8-flash").transform((val) => val || process.env.GEMINI_MODEL || "gemini-3.8-flash"),
-  GEMINI_EMBEDDING_MODEL: z.string().default("text-embedding-004").transform((val) => val || process.env.GEMINI_EMBEDDING_MODEL || "text-embedding-004"),
-  GEMINI_TIMEOUT_MS: z
-    .string()
-    .default("30000")
-    .transform((val) => parseInt(val, 10) || 30000),
-  GEMINI_MAX_RETRIES: z
-    .string()
-    .default("3")
-    .transform((val) => parseInt(val, 10) || 3),
   AI_FEATURES_ENABLED: z
     .string()
     .default("true")
@@ -70,6 +59,9 @@ const envSchema = z.object({
     .string()
     .default("50")
     .transform((val) => parseFloat(val) || 50),
+  DEEPGRAM_API_KEY: z.string().default("").transform((val) => val || process.env.DEEPGRAM_API_KEY || ""),
+  DEEPGRAM_MODEL: z.string().default("nova-3").transform((val) => val || process.env.DEEPGRAM_MODEL || "nova-3"),
+  DEEPGRAM_LANGUAGE: z.string().default("multi").transform((val) => val || process.env.DEEPGRAM_LANGUAGE || "multi"),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

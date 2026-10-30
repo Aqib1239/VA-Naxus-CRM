@@ -3,9 +3,9 @@ import mongoose from "mongoose";
 import { z } from "zod";
 import { ILead } from "../../models/Lead.model";
 import { AiAnalysis } from "../../models/AiAnalysis.model";
-import { callGemini, parseGeminiJson } from "./gemini.provider";
+import { callOpenRouter, parseOpenRouterJson } from "./openrouter.provider";
 import { logAiAudit } from "./ai-audit.service";
-import { geminiEnv, isGeminiConfigured } from "../../config/gemini";
+import { openRouterEnv, isOpenRouterConfigured } from "../../config/openrouter";
 import { IAuthUser } from "../../types/auth.types";
 import { logger } from "../../config/logger";
 
@@ -26,7 +26,7 @@ export const VigilanceCopilotSchema = z.object({
   summary: z.string().max(800),
   mandatoryHumanVerificationRequired: z.literal(true),
   disclaimer: z.string(),
-  calculationMethod: z.enum(["gemini_synthesized", "deterministic_audit"]),
+  calculationMethod: z.enum(["openrouter_synthesized", "deterministic_audit"]),
   analysisTimestamp: z.string(),
 });
 
@@ -136,7 +136,7 @@ export class VigilanceCopilotService {
     const correlationId = crypto.randomUUID();
     const fallback = this.generateDeterministicAudit(lead);
 
-    if (!isGeminiConfigured() || !geminiEnv.AI_FEATURES_ENABLED) {
+    if (!isOpenRouterConfigured() || !openRouterEnv.AI_FEATURES_ENABLED) {
       return fallback;
     }
 
@@ -148,7 +148,7 @@ export class VigilanceCopilotService {
       sourceRecordId: lead._id,
       sourceModel: "Lead",
       taskType: "vigilance_copilot",
-      aiModel: geminiEnv.GEMINI_MODEL,
+      aiModel: openRouterEnv.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:free",
       correlationId,
       state: "processing",
       requestedBy: requestedByObjectId,
@@ -200,19 +200,22 @@ Return JSON with exact schema:
   ],
   "summary": string (max 500 chars),
   "mandatoryHumanVerificationRequired": true,
-  "disclaimer": "AI audit is advisory. The human Vigilance Officer holds sole authority to verify or reject.",
-  "calculationMethod": "gemini_synthesized",
+  "disclaimer": "AI audit is advisory via OpenRouter (${openRouterEnv.OPENROUTER_MODEL || "nvidia/nemotron-3.5-lightning:free"}). The human Vigilance Officer holds sole authority to verify or reject.",
+  "calculationMethod": "openrouter_synthesized",
   "analysisTimestamp": "${new Date().toISOString()}"
 }`;
 
-      const response = await callGemini({
-        prompt,
-        systemInstruction,
+      const response = await callOpenRouter({
+        messages: [
+          { role: "system", content: systemInstruction },
+          { role: "user", content: prompt },
+        ],
         correlationId,
         taskType: "vigilance_copilot",
+        temperature: 0.2,
       });
 
-      const parsed = parseGeminiJson<unknown>(response.text, correlationId);
+      const parsed = parseOpenRouterJson<unknown>(response.content, correlationId);
       const validated = VigilanceCopilotSchema.parse(parsed);
 
       await AiAnalysis.findByIdAndUpdate(analysisRecord._id, {
@@ -237,7 +240,7 @@ Return JSON with exact schema:
     } catch (err: any) {
       logger.warn(
         { err: err?.message, correlationId, leadId: lead._id },
-        "Vigilance copilot Gemini evaluation failed; returning deterministic audit"
+        "Vigilance copilot OpenRouter evaluation failed; returning deterministic audit"
       );
 
       await AiAnalysis.findByIdAndUpdate(analysisRecord._id, {
@@ -248,7 +251,7 @@ Return JSON with exact schema:
       return {
         ...fallback,
         calculationMethod: "deterministic_audit",
-        disclaimer: `Deterministic compliance checklist audit based on CRM records (Gemini synthesis unavailable: ${err?.message || "offline"}). The human Vigilance Officer holds sole authority to verify or reject.`,
+        disclaimer: `Deterministic compliance checklist audit based on CRM records (OpenRouter synthesis unavailable: ${err?.message || "offline"}). The human Vigilance Officer holds sole authority to verify or reject.`,
       };
     }
   }

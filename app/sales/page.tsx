@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { DepartmentBadge } from "@/components/ui/status-badge";
 import { AudioPlayer } from "@/components/ui/audio-player";
+import { AudioIntelligencePanel } from "@/components/ai/AudioIntelligencePanel";
 import { WorkflowTimeline } from "@/components/ui/workflow-timeline";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Lead } from "@/types/leads";
@@ -248,6 +249,13 @@ export default function SalesPage() {
                       isCompleted={isAudioCompleted}
                       disableForwardSeek={!isAudioCompleted}
                       requiredForAction="Claim Lead"
+                    />
+
+                    {/* Speech & Audio Intelligence Transcript Viewer */}
+                    <AudioIntelligencePanel
+                      leadId={selectedLead.id}
+                      hasAudio={Boolean(selectedLead.vigilanceDetails?.audio)}
+                      audioUrl={selectedLead.vigilanceDetails?.audio?.url}
                     />
                   </div>
 

@@ -87,7 +87,7 @@ export interface AudioIntelligenceResult {
   callOutcome: "meeting_confirmed" | "follow_up_needed" | "rescheduled" | "inconclusive";
   uncertainPassages: string[];
   audioDurationSeconds?: number;
-  calculationMethod: "gemini_multimodal_audio";
+  calculationMethod?: string;
   analysisTimestamp: string;
   disclaimer: string;
 }
