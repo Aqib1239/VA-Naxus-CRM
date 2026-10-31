@@ -121,3 +121,5 @@ build/
 *.bak
 *.backup
 *.orig
+
+HOSTED-SECURITY-AUDIT.md
