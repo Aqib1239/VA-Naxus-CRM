@@ -20,8 +20,7 @@
 *Tagline: Connect. Automate. Accelerate.*
 
 🌐 **Live Deployments:**
-- **Frontend Web Application:** [https://va-nexus-crm.vercel.app/](https://va-nexus-crm.vercel.app/)
-- **Backend REST API:** [https://vibhanu-crm-backend-pi.vercel.app/](https://vibhanu-crm-backend-pi.vercel.app/)
+- **Web Application:** [https://va-nexus-crm.vercel.app/](https://va-nexus-crm.vercel.app/)
 - **GitHub Repository:** [https://github.com/Aqib1239/VibhAnu-CRM](https://github.com/Aqib1239/VibhAnu-CRM)
 
 [Key Highlights](#-key-highlights) • [6-Stage Pipeline](#-6-stage-lead-pipeline--department-lifecycle) • [RBAC Matrix](#-user-roles--rbac-matrix) • [AI Subsystem](#-ai-subsystem-architecture) • [Architecture](#-system-architecture) • [Tech Stack](#-tech-stack) • [Quickstart](#-getting-started--local-setup) • [API Specs](#-rest-api-reference) • [Testing](#-testing--quality-assurance) • [Security](#-security--compliance)
