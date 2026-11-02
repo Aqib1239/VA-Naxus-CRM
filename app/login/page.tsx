@@ -10,15 +10,11 @@ import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { Role } from "@/types/auth";
-import { MOCK_USERS, ROLE_CONFIGS } from "@/constants/roles";
 import {
-  Building2,
   Lock,
   Mail,
   Eye,
   EyeOff,
-  Sparkles,
   ArrowRight,
   ShieldCheck,
 } from "lucide-react";
@@ -30,7 +26,6 @@ export default function LoginPage() {
   const { login, user, isReady } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<Role>("ADMIN");
 
   React.useEffect(() => {
     if (isReady && user) {
@@ -41,14 +36,13 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "admin@vibhanu.com",
-      password: "VibhAnu@123",
-      rememberMe: true,
+      email: "",
+      password: "",
+      rememberMe: false,
     },
   });
 
@@ -62,20 +56,6 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleRolePreset = (role: Role) => {
-    const user = MOCK_USERS[role];
-
-    setSelectedRole(role);
-
-    setValue("email", user.email, {
-      shouldValidate: true,
-    });
-
-    setValue("password", "VibhAnu@123", {
-      shouldValidate: true,
-    });
   };
 
   return (
@@ -195,51 +175,6 @@ export default function LoginPage() {
               Sign In to VA Nexus
             </Button>
           </form>
-
-          {/* Quick Demo Role Presets */}
-          <div className="pt-4 border-t border-border/70 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
-                Demo Role Presets
-              </span>
-              <span className="text-[11px] text-muted-foreground">
-                Click to fill
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              {(
-                [
-                  "ADMIN",
-                  "MARKETING",
-                  "COMMUNICATION",
-                  "VIGILANCE",
-                  "SUPPORT",
-                  "SALES",
-                ] as Role[]
-              ).map((r) => {
-                const cfg = ROLE_CONFIGS[r];
-                const isSelected = selectedRole === r;
-
-                return (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => handleRolePreset(r)}
-                    aria-pressed={isSelected}
-                    className={cn(
-                      "p-2.5 rounded-xl border text-[12px] font-semibold text-center transition-all duration-200 truncate",
-                      isSelected
-                        ? "bg-primary/10 text-primary border-primary/40 shadow-neu-inset"
-                        : "border-border/70 bg-card text-foreground shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset"
-                    )}
-                  >
-                    {cfg.badgeLabel}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
         </div>
 
         {/* Security Footer */}

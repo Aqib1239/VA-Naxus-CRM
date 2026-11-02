@@ -1,18 +1,9 @@
 import { User, Role, AuthSession, Permission } from "@/types/auth";
-import { MOCK_USERS, ROLE_CONFIGS } from "@/constants/roles";
+import { ROLE_CONFIGS } from "@/constants/roles";
 import { api } from "./api";
 
 const STORAGE_KEY_USER = "vibhanu_crm_user";
 const STORAGE_KEY_TOKEN = "vibhanu_crm_token";
-
-export const ROLE_CREDENTIALS: Record<Role, { email: string; password: string }> = {
-  ADMIN: { email: "admin@vibhanu.com", password: "VibhAnu@123" },
-  MARKETING: { email: "marketing@vibhanu.com", password: "VibhAnu@123" },
-  COMMUNICATION: { email: "communication@vibhanu.com", password: "VibhAnu@123" },
-  VIGILANCE: { email: "vigilance@vibhanu.com", password: "VibhAnu@123" },
-  SUPPORT: { email: "support@vibhanu.com", password: "VibhAnu@123" },
-  SALES: { email: "sales@vibhanu.com", password: "VibhAnu@123" },
-};
 
 export class AuthService {
   /**
@@ -61,7 +52,7 @@ export class AuthService {
   /**
    * Ensures a valid backend JWT session exists.
    * Deduplicates concurrent calls to prevent multiple simultaneous login requests.
-   * Returns token if valid, or null if missing/expired (without auto-logging in with fake credentials).
+   * Returns token if valid, or null if missing/expired.
    */
   static async ensureSession(): Promise<string | null> {
     if (typeof window === "undefined") return null;
@@ -101,11 +92,10 @@ export class AuthService {
   /**
    * Login user with real REST backend API
    */
-  static async login(email: string, password?: string): Promise<AuthSession> {
-    const payloadPassword = password || "VibhAnu@123";
+  static async login(email: string, password: string): Promise<AuthSession> {
     const response = await api.post<{ user: User; token: string }>("/auth/login", {
       email: email.trim(),
-      password: payloadPassword,
+      password,
     });
 
     const user = response.data.user;
@@ -117,20 +107,6 @@ export class AuthService {
       user,
       token,
     };
-  }
-
-  /**
-   * Quick Role Switcher for live UI testing
-   */
-  static async switchRole(role: Role): Promise<User> {
-    const creds = ROLE_CREDENTIALS[role];
-    if (creds) {
-      const session = await this.login(creds.email, creds.password);
-      return session.user;
-    }
-    const user = MOCK_USERS[role];
-    this.setCurrentUser(user);
-    return user;
   }
 
   /**

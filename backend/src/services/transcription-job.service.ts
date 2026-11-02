@@ -1,13 +1,18 @@
 import crypto from "crypto";
+import http from "http";
+import https from "https";
+import { URL } from "url";
 import mongoose from "mongoose";
 import { Transcription, ITranscription, ISpeakerMapping, SpeakerRole } from "../models/Transcription.model";
-import { ILead } from "../models/Lead.model";
-import { DeepgramService } from "./deepgram.service";
+import { ILead, Lead } from "../models/Lead.model";
+import { DeepgramService, DeepgramTranscriptionOutput } from "./deepgram.service";
 import { callOpenRouter, stripInternalReasoning } from "./ai/openrouter.provider";
 import { logAiAudit } from "./ai/ai-audit.service";
 import { logger } from "../config/logger";
 import { env } from "../config/env";
+import { generateSignedCloudinaryAudioUrl } from "../config/cloudinary";
 import { IAuthUser } from "../types/auth.types";
+import { IAudioMetadata } from "../types/lead.types";
 
 const STALE_JOB_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes
 const MAX_AUTO_RETRIES = 3;
@@ -47,6 +52,86 @@ export class TranscriptionJobService {
   }
 
   /**
+   * Securely retrieve recording bytes in memory for direct transfer to Deepgram.
+   * Keeps Cloudinary signing material strictly server-side and never exposes signed URLs.
+   */
+  static async fetchRecordingBuffer(
+    audioMeta: IAudioMetadata
+  ): Promise<{ buffer: Buffer; mimeType: string } | null> {
+    const publicId = audioMeta.publicId || audioMeta.storagePath;
+    const isCloudinary =
+      publicId &&
+      (publicId.startsWith("vibhanu-crm/audio/") ||
+        (publicId.startsWith("audio_") && !publicId.endsWith(".wav") && !publicId.endsWith(".mp3")));
+
+    let fetchUrl: string | null = null;
+    if (isCloudinary) {
+      fetchUrl = generateSignedCloudinaryAudioUrl(publicId, {
+        resourceType: "video",
+        deliveryType: audioMeta.deliveryType || "authenticated",
+        format: audioMeta.format,
+      });
+    } else if (audioMeta.url && audioMeta.url.startsWith("https://res.cloudinary.com/")) {
+      fetchUrl = audioMeta.url;
+    }
+
+    if (!fetchUrl) {
+      return null;
+    }
+
+    // SSRF & Host validation on fetchUrl
+    let parsed: URL;
+    try {
+      parsed = new URL(fetchUrl);
+    } catch {
+      return null;
+    }
+
+    const configuredHost = (process.env.CLOUDINARY_DELIVERY_HOST || "res.cloudinary.com").toLowerCase().trim();
+    if (parsed.hostname.toLowerCase() !== configuredHost) {
+      logger.warn({ host: parsed.hostname, configuredHost }, "Untrusted storage host blocked during audio buffer retrieval");
+      return null;
+    }
+
+    const isDevOrTest = env.NODE_ENV === "development" || env.NODE_ENV === "test";
+    if (parsed.protocol !== "https:" && (!isDevOrTest || parsed.protocol !== "http:")) {
+      logger.warn({ protocol: parsed.protocol }, "Invalid protocol blocked during audio buffer retrieval");
+      return null;
+    }
+
+    return new Promise((resolve, reject) => {
+      const client = parsed.protocol === "http:" ? http : https;
+      const req = client.get(
+        fetchUrl!,
+        {
+          timeout: 20000,
+          headers: {
+            "User-Agent": "VA-Nexus-Backend-Worker/1.0",
+            Accept: audioMeta.mimeType || "audio/*",
+          },
+        },
+        (res) => {
+          if (res.statusCode !== 200 && res.statusCode !== 206) {
+            return reject(new Error(`Failed to retrieve audio from storage: HTTP ${res.statusCode}`));
+          }
+          const chunks: Buffer[] = [];
+          res.on("data", (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+          res.on("end", () => {
+            const buffer = Buffer.concat(chunks);
+            const mimeType = (res.headers["content-type"] as string) || audioMeta.mimeType || "audio/mpeg";
+            resolve({ buffer, mimeType });
+          });
+          res.on("error", reject);
+        }
+      );
+      req.on("timeout", () => {
+        req.destroy(new Error("Storage audio retrieval timed out"));
+      });
+      req.on("error", reject);
+    });
+  }
+
+  /**
    * Create a new transcription job or return an existing completed/in-progress job.
    */
   static async createOrGetJob(
@@ -60,7 +145,8 @@ export class TranscriptionJobService {
     }
 
     const recordingId = audioMeta.id || `aud_${lead._id.toString()}`;
-    const audioUrl = audioMeta.url;
+    // Store clean internal CRM proxy endpoint in DB, never raw or signed Cloudinary URLs
+    const audioUrl = `/api/leads/${lead._id.toString()}/audio`;
 
     // Validate audio constraints
     if (audioMeta.duration && audioMeta.duration > 120) {
@@ -169,8 +255,39 @@ export class TranscriptionJobService {
     logger.info({ jobId, workerId: WORKER_ID }, "Atomically claimed transcription job; calling Deepgram");
 
     try {
-      // Perform Deepgram transcription
-      const dgOutput = await DeepgramService.transcribeAudioUrl(claimedJob.audioUrl);
+      // 1. Fetch recording bytes securely in memory
+      let dgOutput: DeepgramTranscriptionOutput;
+      const lead = await Lead.findById(claimedJob.leadId);
+      const audioMeta = lead?.vigilanceDetails?.audio;
+
+      let audioData: { buffer: Buffer; mimeType: string } | null = null;
+      if (audioMeta) {
+        try {
+          audioData = await this.fetchRecordingBuffer(audioMeta);
+        } catch (fetchErr: any) {
+          logger.warn({ err: fetchErr?.message, jobId }, "Server-side audio byte retrieval failed; checking fallback");
+        }
+      }
+
+      if (audioData && audioData.buffer.length > 0) {
+        // Preferred: Direct binary transfer to Deepgram without exposing signed Cloudinary URLs
+        dgOutput = await DeepgramService.transcribeAudioBuffer(audioData.buffer, audioData.mimeType);
+      } else {
+        // Fallback for tests, direct public URLs, or mock environments
+        let fallbackUrl = claimedJob.audioUrl;
+        if (!fallbackUrl || !fallbackUrl.startsWith("http")) {
+          if (audioMeta?.publicId) {
+            fallbackUrl = generateSignedCloudinaryAudioUrl(audioMeta.publicId, {
+              resourceType: "video",
+              deliveryType: audioMeta.deliveryType || "authenticated",
+              format: audioMeta.format,
+            });
+          } else if (audioMeta?.url && audioMeta.url.startsWith("http")) {
+            fallbackUrl = audioMeta.url;
+          }
+        }
+        dgOutput = await DeepgramService.transcribeAudioUrl(fallbackUrl);
+      }
 
       // Preserve existing speaker mappings if any were previously assigned
       const existingMappings = claimedJob.speakerMappings || [];

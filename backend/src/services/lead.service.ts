@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { Lead, ILead } from "../models/Lead.model";
+import { Lead, ILead, sanitizeLeadAudio } from "../models/Lead.model";
 import { DEPARTMENTS, LEAD_STATUS, WORKFLOW_ACTIONS, DepartmentType, LeadStatusType } from "../constants/departments";
 import { ROLES, ROLE_DEFINITIONS, UserRole } from "../constants/roles";
 import { IAuthUser } from "../types/auth.types";
@@ -38,7 +38,7 @@ export class LeadService {
   /**
    * Helper to check if lead ID is MongoDB ObjectId or leadCode
    */
-  private static getLeadQuery(id: string) {
+  public static getLeadQuery(id: string) {
     if (mongoose.Types.ObjectId.isValid(id)) {
       return { $or: [{ _id: id }, { leadCode: id }] };
     }
@@ -154,11 +154,18 @@ export class LeadService {
     ]);
     const duration = Date.now() - tStart;
 
-    // Transform _id to id for lean results
-    const mappedLeads = leads.map((l: any) => ({
-      ...l,
-      id: l._id?.toString() || l.id,
-    }));
+    // Transform _id to id for lean results and sanitize audio metadata to prevent storage leakage
+    const mappedLeads = leads.map((l: any) => {
+      const id = l._id?.toString() || l.id;
+      delete l._id;
+      delete l.__v;
+      const mapped = {
+        ...l,
+        id,
+      };
+      sanitizeLeadAudio(mapped);
+      return mapped;
+    });
 
     return {
       data: mappedLeads,

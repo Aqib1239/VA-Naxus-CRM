@@ -1,9 +1,12 @@
 import { z } from "zod";
 import dotenv from "dotenv";
 import path from "path";
+import { parseAndValidateCorsOrigins } from "./cors";
 
 // Load .env file
 dotenv.config();
+
+const isProduction = process.env.NODE_ENV === "production";
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
@@ -19,8 +22,72 @@ const envSchema = z.object({
     .string()
     .default("")
     .transform((val) => val || process.env.MONGODB_URI || process.env.MONGO_URI || ""),
-  JWT_SECRET: z.string().min(16, "JWT_SECRET must be at least 16 characters").default("vibhanu_crm_super_secure_jwt_secret_key_2026_dev_prod"),
+  JWT_SECRET: isProduction
+    ? z
+        .string({
+          required_error: "JWT_SECRET is required in production environment.",
+          invalid_type_error: "JWT_SECRET must be a string.",
+        })
+        .min(32, "JWT_SECRET must be at least 32 characters in production.")
+    : z
+        .string()
+        .min(16, "JWT_SECRET must be at least 16 characters in development.")
+        .default("vibhanu_crm_dev_secret_key_non_production_only"),
   JWT_EXPIRES_IN: z.string().default("7d"),
+  CORS_ALLOWED_ORIGINS: isProduction
+    ? z
+        .string({
+          required_error: "CORS_ALLOWED_ORIGINS is required in production environment.",
+          invalid_type_error: "CORS_ALLOWED_ORIGINS must be a string.",
+        })
+        .min(1, "CORS_ALLOWED_ORIGINS cannot be empty in production.")
+        .default("")
+        .transform((val) => {
+          const resolved = (process.env.CORS_ALLOWED_ORIGINS || process.env.CLIENT_URL || val).trim();
+          if (!resolved) {
+            throw new Error("CORS_ALLOWED_ORIGINS (or CLIENT_URL) is required and cannot be empty in production.");
+          }
+          return resolved;
+        })
+    : z
+        .string()
+        .default("http://localhost:3000,http://127.0.0.1:3000")
+        .transform((val) => (process.env.CORS_ALLOWED_ORIGINS || process.env.CLIENT_URL || val).trim()),
+  REDIS_URL: isProduction
+    ? z
+        .string()
+        .default("")
+        .transform((val) => {
+          const resolved = (
+            process.env.REDIS_URL ||
+            process.env.KV_URL ||
+            process.env.UPSTASH_REDIS_URL ||
+            val
+          ).trim();
+          if (!resolved) {
+            throw new Error(
+              "REDIS_URL (or KV_URL) is required in production for shared serverless media ticket storage."
+            );
+          }
+          if (!resolved.startsWith("redis://") && !resolved.startsWith("rediss://")) {
+            throw new Error("REDIS_URL (or KV_URL) must use a secure Redis protocol (rediss:// or redis://).");
+          }
+          return resolved;
+        })
+    : z
+        .string()
+        .optional()
+        .default("")
+        .transform(
+          (val) =>
+            (
+              process.env.REDIS_URL ||
+              process.env.KV_URL ||
+              process.env.UPSTASH_REDIS_URL ||
+              val ||
+              ""
+            ).trim()
+        ),
   CLIENT_URL: z.string().default("http://localhost:3000"),
   UPLOAD_DIR: z.string().default("./uploads"),
   MAX_AUDIO_FILE_SIZE: z
@@ -64,7 +131,7 @@ const envSchema = z.object({
   DEEPGRAM_LANGUAGE: z.string().default("multi").transform((val) => val || process.env.DEEPGRAM_LANGUAGE || "multi"),
 });
 
-export type EnvConfig = z.infer<typeof envSchema>;
+export type EnvConfig = z.infer<typeof envSchema> & { corsAllowedOrigins: string[] };
 
 function validateEnv(): EnvConfig {
   const result = envSchema.safeParse(process.env);
@@ -74,7 +141,16 @@ function validateEnv(): EnvConfig {
     throw new Error("Invalid environment configuration. Check your .env file.");
   }
 
-  return result.data;
+  // Validate CORS origins at application startup (fails closed on invalid/wildcard/empty production config)
+  const corsAllowedOrigins = parseAndValidateCorsOrigins(
+    result.data.CORS_ALLOWED_ORIGINS || result.data.CLIENT_URL,
+    isProduction
+  );
+
+  return {
+    ...result.data,
+    corsAllowedOrigins,
+  };
 }
 
 export const env = validateEnv();

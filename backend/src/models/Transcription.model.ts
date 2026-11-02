@@ -186,6 +186,10 @@ const TranscriptionSchema = new Schema<ITranscription>(
         ret.id = ret._id ? ret._id.toString() : ret.id;
         delete ret._id;
         delete ret.__v;
+        // Never leak raw upstream or signed Cloudinary URLs in client transcription responses
+        if (ret.leadId) {
+          ret.audioUrl = `/api/leads/${ret.leadId.toString()}/audio`;
+        }
         return ret;
       },
     },

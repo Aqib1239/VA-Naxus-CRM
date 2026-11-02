@@ -16,7 +16,6 @@ import {
 import { useAuth } from "@/context/auth-context";
 import { useLeads } from "@/context/leads-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { RoleSwitcher } from "@/components/ui/role-switcher";
 import { RoleBadge } from "@/components/ui/role-badge";
 import { Button } from "@/components/ui/button";
 import { getInitials } from "@/lib/utils";
@@ -182,8 +181,12 @@ export function Header({ onToggleMobileMenu }: HeaderProps) {
             </kbd>
           </button>
 
-          {/* Role Preview Switcher */}
-          <RoleSwitcher />
+          {/* Authenticated Role Badge (Read-only) */}
+          {user?.role && (
+            <div className="hidden sm:flex items-center">
+              <RoleBadge role={user.role} size="sm" />
+            </div>
+          )}
 
           {/* Theme Toggle */}
           <ThemeToggle className="w-9 h-9 rounded-xl bg-card border border-border/80 shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset" />

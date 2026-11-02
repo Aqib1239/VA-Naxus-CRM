@@ -10,7 +10,11 @@ import { SupportDashboard } from "@/components/dashboard/SupportDashboard";
 import { SalesDashboard } from "@/components/dashboard/SalesDashboard";
 
 export default function DashboardPage() {
-  const { role } = useAuth();
+  const { role, user, isReady } = useAuth();
+
+  if (!isReady || !user || !role) {
+    return null;
+  }
 
   switch (role) {
     case "ADMIN":
@@ -26,6 +30,6 @@ export default function DashboardPage() {
     case "SALES":
       return <SalesDashboard />;
     default:
-      return <AdminDashboard />;
+      return null;
   }
 }

@@ -203,6 +203,9 @@ export default function SupportPage() {
                         <div className="pt-2">
                           <AudioPlayer
                             src={selectedLead.vigilanceDetails.audio.url}
+                            leadId={selectedLead.id}
+                            protectionStatus={selectedLead.vigilanceDetails.audio.protectionStatus}
+                            recordingId={selectedLead.leadCode}
                             fileName={selectedLead.vigilanceDetails.audio.fileName}
                             fileSize={selectedLead.vigilanceDetails.audio.fileSize}
                             durationSeconds={selectedLead.vigilanceDetails.audio.duration}

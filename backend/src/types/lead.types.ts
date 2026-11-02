@@ -1,6 +1,8 @@
 import { DepartmentType, LeadStatusType } from "../constants/departments";
 import { UserRole } from "../constants/roles";
 
+export type AudioProtectionStatus = "protected" | "legacy-public" | "private" | "unknown";
+
 export interface IAudioMetadata {
   id: string;
   fileName: string;
@@ -14,7 +16,11 @@ export interface IAudioMetadata {
   uploadedAt: string;
   waveformSample?: number[];
   publicId?: string;
-  resourceType?: string;
+  resourceType?: "video" | "raw";
+  deliveryType?: "upload" | "authenticated" | "private";
+  format?: string;
+  version?: string;
+  protectionStatus?: AudioProtectionStatus;
 }
 
 export interface IVerificationMetadata {

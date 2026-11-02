@@ -15,9 +15,6 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     } else if (req.cookies && (req.cookies.token || req.cookies.vibhanu_auth_token)) {
       // 2. Check HttpOnly cookie
       token = req.cookies.token || req.cookies.vibhanu_auth_token;
-    } else if (typeof req.query.token === "string" && req.query.token) {
-      // 3. Check query param token (required for HTML5 media elements like <audio>)
-      token = req.query.token;
     }
 
     if (!token) {
@@ -83,5 +80,51 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     }
 
     return ApiResponse.unauthorized(res, "Authentication failed.");
+  }
+}
+
+/**
+ * Optional authentication middleware for endpoints (such as media endpoints)
+ * that may authenticate via Bearer token / cookie or via an alternative mechanism
+ * such as a short-lived media ticket.
+ *
+ * Populates req.user if a valid token is present; leaves req.user undefined otherwise.
+ */
+export async function optionalAuth(req: Request, res: Response, next: NextFunction) {
+  try {
+    let token: string | undefined;
+
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    } else if (req.cookies && (req.cookies.token || req.cookies.vibhanu_auth_token)) {
+      token = req.cookies.token || req.cookies.vibhanu_auth_token;
+    }
+
+    if (!token) {
+      return next();
+    }
+
+    try {
+      const decoded = verifyToken(token);
+      const user = await User.findById(decoded.userId).select("+isActive");
+      if (user && user.isActive) {
+        req.user = {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          department: user.department,
+          avatar: user.avatar,
+          isActive: user.isActive,
+        };
+      }
+    } catch {
+      // Intentionally ignored in optionalAuth; controller will enforce ticket or requireAuth
+    }
+
+    next();
+  } catch (err) {
+    next(err);
   }
 }

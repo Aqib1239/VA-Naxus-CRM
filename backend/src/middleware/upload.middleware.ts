@@ -47,7 +47,7 @@ const storage = new CloudinaryStorage({
     return {
       folder: "vibhanu-crm/audio",
       resource_type: "video",          // ← REQUIRED for audio
-      type: "upload",                  // public delivery; use "authenticated" if you need signed URLs
+      type: "authenticated",           // Authenticated delivery: accessible exclusively via signed URLs on backend proxy
       format: ext,
       public_id: `audio_${sanitizedLeadId}_${uniqueSuffix}`,
     };

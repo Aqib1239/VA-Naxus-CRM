@@ -362,6 +362,9 @@ export default function VigilancePage() {
                         <div className="space-y-3">
                           <AudioPlayer
                             src={uploadedAudio.url}
+                            leadId={selectedLead.id}
+                            protectionStatus={uploadedAudio.protectionStatus}
+                            recordingId={selectedLead.leadCode}
                             fileName={uploadedAudio.fileName}
                             fileSize={uploadedAudio.fileSize}
                             durationSeconds={uploadedAudio.duration}
