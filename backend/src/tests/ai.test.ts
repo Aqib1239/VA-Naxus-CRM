@@ -107,24 +107,29 @@ jest.mock("../config/openrouter", () => {
 });
 
 // Mock Deepgram for audio transcription
-jest.mock("../services/deepgram.service", () => ({
-  DeepgramService: {
-    transcribeAudioUrl: jest.fn(async () => ({
-      fullTranscript: "Hello, am I speaking with Acme Industrial Corp? Yes, confirmed.",
-      confidence: 0.96,
-      audioDurationSeconds: 45,
-      paragraphs: [],
-      utterances: [
-        { speaker: 0, start: 0.5, end: 3.2, transcript: "Hello, am I speaking with Acme Industrial Corp?", confidence: 0.98 },
-        { speaker: 1, start: 3.5, end: 5.0, transcript: "Yes, confirmed.", confidence: 0.95 },
-      ],
-      words: [],
-      speakers: [{ speakerId: 0, role: "UNKNOWN" }, { speakerId: 1, role: "UNKNOWN" }],
-      detectedLanguage: "hi-en",
-    })),
-  },
-  isDeepgramConfigured: jest.fn(() => true),
-}));
+jest.mock("../services/deepgram.service", () => {
+  const getMockResult = async () => ({
+    fullTranscript: "Hello, am I speaking with Acme Industrial Corp? Yes, confirmed.",
+    confidence: 0.96,
+    audioDurationSeconds: 45,
+    paragraphs: [],
+    utterances: [
+      { speaker: 0, start: 0.5, end: 3.2, transcript: "Hello, am I speaking with Acme Industrial Corp?", confidence: 0.98 },
+      { speaker: 1, start: 3.5, end: 5.0, transcript: "Yes, confirmed.", confidence: 0.95 },
+    ],
+    words: [],
+    speakers: [{ speakerId: 0, role: "UNKNOWN" }, { speakerId: 1, role: "UNKNOWN" }],
+    detectedLanguage: "hi-en",
+  });
+
+  return {
+    DeepgramService: {
+      transcribeAudioUrl: jest.fn(getMockResult),
+      transcribeAudioBuffer: jest.fn(getMockResult),
+    },
+    isDeepgramConfigured: jest.fn(() => true),
+  };
+});
 
 let mongoServer: MongoMemoryServer;
 const originalFetch = global.fetch;

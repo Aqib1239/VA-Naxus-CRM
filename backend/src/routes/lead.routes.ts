@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { LeadController } from "../controllers/lead.controller";
 import { AudioController } from "../controllers/audio.controller";
-import { requireAuth } from "../middleware/auth.middleware";
+import { requireAuth, optionalAuth } from "../middleware/auth.middleware";
 import { requireRole } from "../middleware/role.middleware";
 import { validateBody, validateQuery } from "../middleware/validate.middleware";
 import { audioUpload } from "../middleware/upload.middleware";
@@ -18,7 +18,12 @@ import { leadQueryValidator } from "../validators/query.validator";
 
 const router = Router();
 
-// Apply requireAuth to all lead endpoints
+// ── Protected Media Retrieval Endpoint (Supports Bearer token, Cookie, or Short-Lived Media Ticket) ──
+// Mounted before generic requireAuth so media ticket authentication can be evaluated in AudioController
+router.get("/:id/audio", optionalAuth, AudioController.getAudio);
+router.head("/:id/audio", optionalAuth, AudioController.getAudio);
+
+// Apply requireAuth to all remaining lead endpoints
 router.use(requireAuth);
 
 // 1. Create Lead (MARKETING / ADMIN)
@@ -33,6 +38,10 @@ router.post(
 router.get("/", validateQuery(leadQueryValidator), LeadController.getLeads);
 
 // 3. Audio endpoints
+// Generate short-lived media ticket for authorized playback (Requires authenticated user + lead RBAC)
+router.post("/:id/audio/ticket", AudioController.createAudioTicket);
+router.get("/:id/audio/ticket", AudioController.createAudioTicket);
+
 router.post(
   "/:id/audio",
   requireRole(ROLES.VIGILANCE, ROLES.ADMIN),
@@ -40,7 +49,6 @@ router.post(
   audioUpload.single("audio"),
   AudioController.uploadAudio
 );
-router.get("/:id/audio", AudioController.getAudio);
 router.delete("/:id/audio", requireRole(ROLES.VIGILANCE, ROLES.ADMIN), AudioController.deleteAudio);
 
 // 4. Workflow Transition: Communication -> Vigilance

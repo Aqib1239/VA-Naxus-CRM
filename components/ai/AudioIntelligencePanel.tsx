@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText,
@@ -34,6 +34,8 @@ import {
   SpeakerRole,
   SpeakerMapping,
 } from "@/services/transcription.service";
+import { LeadsService } from "@/services/leads.service";
+import { isValidLeadId, getBackendOrigin } from "@/components/ui/audio-player";
 import { AiBadge } from "./AiBadge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -82,12 +84,80 @@ export function AudioIntelligencePanel({
   const [isSavingMapping, setIsSavingMapping] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Resolved audio URL
+  // Resolved audio URL with ticket acquisition for authorized streaming proxy
+  const [streamUrlWithTicket, setStreamUrlWithTicket] = useState<string | null>(null);
+  const [ticketLoading, setTicketLoading] = useState(false);
+  const [ticketError, setTicketError] = useState<string | null>(null);
+  const requestedLeadIdRef = useRef<string | null>(null);
+  const isRequestingTicketRef = useRef(false);
+  const renewalCountRef = useRef(0);
+  const savedPlaybackPositionRef = useRef<number | null>(null);
+
+  const requestAudioTicket = useCallback(
+    async (targetLeadId: string) => {
+      if (!targetLeadId || !isValidLeadId(targetLeadId)) {
+        setTicketError("Invalid lead reference for audio playback.");
+        return;
+      }
+      if (/^lead-\d{3,4}$/i.test(targetLeadId)) {
+        // Client-side demo fixture lead: audio ticket not needed
+        return;
+      }
+      if (isRequestingTicketRef.current) return;
+      isRequestingTicketRef.current = true;
+      setTicketLoading(true);
+      setTicketError(null);
+
+      try {
+        const res = await LeadsService.getAudioTicket(targetLeadId);
+        if (res?.streamUrl) {
+          const backendOrigin = getBackendOrigin();
+          const fullUrl = res.streamUrl.startsWith("http")
+            ? res.streamUrl
+            : `${backendOrigin}${res.streamUrl.startsWith("/") ? "" : "/"}${res.streamUrl}`;
+          setStreamUrlWithTicket(fullUrl);
+          requestedLeadIdRef.current = targetLeadId;
+        }
+      } catch (err: any) {
+        const status = err?.status || err?.statusCode;
+        if (status === 404) {
+          setTicketError("Audio recording not found for this lead.");
+        } else if (status === 403 || status === 401) {
+          setTicketError("Access to this audio recording is restricted for your role or session expired.");
+        } else {
+          setTicketError("Failed to acquire authorized audio session. Please retry.");
+        }
+      } finally {
+        isRequestingTicketRef.current = false;
+        setTicketLoading(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    if (hasAudio && leadId && requestedLeadIdRef.current !== leadId) {
+      requestAudioTicket(leadId);
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [hasAudio, leadId, requestAudioTicket]);
+
   const resolvedAudioSrc = useMemo(() => {
-    if (audioUrl) return audioUrl;
-    if (data?.audioUrl) return data.audioUrl;
-    return `/api/leads/${leadId}/audio`;
-  }, [audioUrl, data?.audioUrl, leadId]);
+    if (streamUrlWithTicket) {
+      if (streamUrlWithTicket.includes("res.cloudinary.com")) return "";
+      return streamUrlWithTicket;
+    }
+    if (audioUrl && /[?&]ticket=/.test(audioUrl) && !audioUrl.includes("res.cloudinary.com")) {
+      return audioUrl;
+    }
+    if (data?.audioUrl && /[?&]ticket=/.test(data.audioUrl) && !data.audioUrl.includes("res.cloudinary.com")) {
+      return data.audioUrl;
+    }
+    return "";
+  }, [streamUrlWithTicket, audioUrl, data?.audioUrl]);
 
   // Load existing transcription on mount
   useEffect(() => {
@@ -274,6 +344,10 @@ export function AudioIntelligencePanel({
   // Audio seeking to exact second
   const handleSeekTo = (seconds: number) => {
     if (!audioRef.current) return;
+    if (!resolvedAudioSrc) {
+      requestAudioTicket(leadId);
+      return;
+    }
     audioRef.current.currentTime = seconds;
     setCurrentTime(seconds);
     audioRef.current.play().catch(() => {});
@@ -287,9 +361,30 @@ export function AudioIntelligencePanel({
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      if (!resolvedAudioSrc) {
+        requestAudioTicket(leadId);
+        return;
+      }
       audioRef.current.play().catch(() => {});
       setIsPlaying(true);
     }
+  };
+
+  const handleAudioError = () => {
+    if (renewalCountRef.current < 3 && leadId && isValidLeadId(leadId)) {
+      renewalCountRef.current += 1;
+      if (audioRef.current) {
+        savedPlaybackPositionRef.current = audioRef.current.currentTime;
+      }
+      requestAudioTicket(leadId).then(() => {
+        if (audioRef.current) {
+          audioRef.current.load();
+        }
+      });
+      return;
+    }
+    setTicketError("Audio playback session expired or connection failed. Click to retry.");
+    setIsPlaying(false);
   };
 
   const handleCopy = async () => {
@@ -345,7 +440,14 @@ export function AudioIntelligencePanel({
           if (audioRef.current && isFinite(audioRef.current.duration)) {
             setDuration(audioRef.current.duration);
           }
+          if (savedPlaybackPositionRef.current !== null && audioRef.current) {
+            const restorePos = savedPlaybackPositionRef.current;
+            audioRef.current.currentTime = restorePos;
+            savedPlaybackPositionRef.current = null;
+            audioRef.current.play().catch(() => {});
+          }
         }}
+        onError={handleAudioError}
         onEnded={() => setIsPlaying(false)}
         onPause={() => setIsPlaying(false)}
         onPlay={() => setIsPlaying(true)}
@@ -469,6 +571,22 @@ export function AudioIntelligencePanel({
         <div className="space-y-4">
           {/* Synchronized Compact Audio Player Bar */}
           <div className="rounded-xl border border-border/70 bg-muted/20 p-3 space-y-2.5 shadow-neu-inset-sm">
+            {ticketError && (
+              <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-destructive/30 bg-destructive/10 text-xs text-destructive">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{ticketError}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => requestAudioTicket(leadId)}
+                  disabled={ticketLoading}
+                  className="px-2 py-0.5 text-[11px] font-semibold rounded bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shrink-0"
+                >
+                  {ticketLoading ? "Connecting…" : "Retry"}
+                </button>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <button

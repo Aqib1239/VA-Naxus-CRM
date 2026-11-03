@@ -13,7 +13,7 @@ async function startServer() {
     await connectDatabase();
 
     // 2. Auto-seed if database has no users in development
-    if (env.NODE_ENV !== "production") {
+    if (env.NODE_ENV === "development" || env.NODE_ENV === "test") {
       await seedDatabaseIfEmpty();
     }
 
@@ -27,6 +27,7 @@ async function startServer() {
       logger.info(`🔗 Environment: ${env.NODE_ENV}`);
       logger.info(`🔗 API Health: http://localhost:${env.PORT}/api/health`);
       logger.info(`🔗 Allowed Client: ${env.CLIENT_URL}`);
+      logger.info(`🔗 CORS Allowed Origins: ${env.corsAllowedOrigins.join(", ")}`);
       logger.info(`=======================================================`);
     });
 

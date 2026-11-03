@@ -289,6 +289,9 @@ export default function LeadDetailPage() {
               <div className="space-y-3">
                 <AudioPlayer
                   src={lead.vigilanceDetails.audio.url}
+                  leadId={lead.id}
+                  protectionStatus={lead.vigilanceDetails.audio.protectionStatus}
+                  recordingId={lead.leadCode}
                   fileName={lead.vigilanceDetails.audio.fileName}
                   fileSize={lead.vigilanceDetails.audio.fileSize}
                   durationSeconds={lead.vigilanceDetails.audio.duration || 180}

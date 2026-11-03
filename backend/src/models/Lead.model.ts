@@ -21,6 +21,16 @@ const AudioSchema = new Schema<IAudioMetadata>(
     waveformSample: { type: [Number], default: [] },
     publicId: { type: String },
     resourceType: { type: String, default: "video" },
+    deliveryType: {
+      type: String,
+      enum: ["upload", "authenticated", "private"],
+    },
+    format: { type: String },
+    version: { type: String },
+    protectionStatus: {
+      type: String,
+      enum: ["protected", "legacy-public", "private", "unknown"],
+    },
   },
   { _id: false }
 );
@@ -54,6 +64,34 @@ const WorkflowHistorySchema = new Schema<IWorkflowHistoryItem>(
   },
   { _id: false }
 );
+
+/**
+ * Safely derives protectionStatus and completely strips Cloudinary storage details
+ * from lead audio metadata before sending to client.
+ */
+export function sanitizeLeadAudio(leadObj: any): void {
+  if (!leadObj) return;
+  const id = leadObj.id || (leadObj._id ? leadObj._id.toString() : "");
+  if (leadObj.vigilanceDetails?.audio) {
+    const audio = leadObj.vigilanceDetails.audio;
+    const rawDelivery = audio.deliveryType;
+    let protectionStatus: "protected" | "legacy-public" | "private" | "unknown" = "unknown";
+    if (rawDelivery === "authenticated") {
+      protectionStatus = "protected";
+    } else if (rawDelivery === "upload") {
+      protectionStatus = "legacy-public";
+    } else if (rawDelivery === "private") {
+      protectionStatus = "private";
+    }
+    audio.protectionStatus = protectionStatus;
+    if (id) {
+      audio.url = `/api/leads/${id}/audio`;
+    }
+    delete audio.storagePath;
+    delete audio.publicId;
+    delete audio.deliveryType;
+  }
+}
 
 const leadSchema = new Schema<ILead>(
   {
@@ -181,6 +219,7 @@ const leadSchema = new Schema<ILead>(
         ret.id = ret._id ? ret._id.toString() : ret.id;
         delete ret._id;
         delete ret.__v;
+        sanitizeLeadAudio(ret);
         return ret;
       },
     },

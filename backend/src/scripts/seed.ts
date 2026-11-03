@@ -9,11 +9,51 @@ import { connectDatabase, disconnectDatabase } from "../config/database";
 import { logger } from "../config/logger";
 import { env } from "../config/env";
 
-export const PRIMARY_DEMO_USERS = [
+// Validate seed environment and explicit configuration before any DB operations
+export function validateSeedEnvironment(): string {
+  const rawEnv = process.env.NODE_ENV ? process.env.NODE_ENV.toLowerCase().trim() : "";
+
+  if (!rawEnv) {
+    throw new Error(
+      "FATAL: NODE_ENV is missing or empty. Demo seeding is strictly restricted to 'development' or 'test'."
+    );
+  }
+
+  if (rawEnv !== "development" && rawEnv !== "test") {
+    throw new Error(
+      `FATAL: Demo seed script is not permitted to run in environment '${rawEnv}'. It is strictly restricted to 'development' or 'test'.`
+    );
+  }
+
+  const rawPassword = process.env.SEED_DEFAULT_PASSWORD;
+  if (!rawPassword || !rawPassword.trim()) {
+    throw new Error(
+      "FATAL: SEED_DEFAULT_PASSWORD environment variable is required to run seed script."
+    );
+  }
+
+  const trimmedPassword = rawPassword.trim();
+  if (trimmedPassword.length < 12) {
+    throw new Error(
+      "FATAL: SEED_DEFAULT_PASSWORD must be at least 12 characters long to satisfy password policy."
+    );
+  }
+
+  return trimmedPassword;
+}
+
+export interface IDemoUserSeed {
+  name: string;
+  email: string;
+  role: (typeof ROLES)[keyof typeof ROLES];
+  department: string;
+  avatar: string;
+}
+
+export const PRIMARY_DEMO_USERS: IDemoUserSeed[] = [
   {
     name: "Ananya Sharma",
     email: "admin@vibhanu.com",
-    password: "VibhAnu@123",
     role: ROLES.ADMIN,
     department: "Executive Management",
     avatar: "AS",
@@ -21,7 +61,6 @@ export const PRIMARY_DEMO_USERS = [
   {
     name: "Rohan Varma",
     email: "marketing@vibhanu.com",
-    password: "VibhAnu@123",
     role: ROLES.MARKETING,
     department: "Growth & Acquisition",
     avatar: "RV",
@@ -29,7 +68,6 @@ export const PRIMARY_DEMO_USERS = [
   {
     name: "Pooja Hegde",
     email: "communication@vibhanu.com",
-    password: "VibhAnu@123",
     role: ROLES.COMMUNICATION,
     department: "Customer Outreach",
     avatar: "PH",
@@ -37,7 +75,6 @@ export const PRIMARY_DEMO_USERS = [
   {
     name: "Vikram Malhotra",
     email: "vigilance@vibhanu.com",
-    password: "VibhAnu@123",
     role: ROLES.VIGILANCE,
     department: "Compliance & Vigilance",
     avatar: "VM",
@@ -45,7 +82,6 @@ export const PRIMARY_DEMO_USERS = [
   {
     name: "Neha Sundaram",
     email: "support@vibhanu.com",
-    password: "VibhAnu@123",
     role: ROLES.SUPPORT,
     department: "Operations & Support",
     avatar: "NS",
@@ -53,7 +89,6 @@ export const PRIMARY_DEMO_USERS = [
   {
     name: "Aditya Deshmukh",
     email: "sales@vibhanu.com",
-    password: "VibhAnu@123",
     role: ROLES.SALES,
     department: "Enterprise Sales",
     avatar: "AD",
@@ -61,11 +96,10 @@ export const PRIMARY_DEMO_USERS = [
 ];
 
 // Alias accounts for name-based email logins
-export const ALIAS_DEMO_USERS = [
+export const ALIAS_DEMO_USERS: IDemoUserSeed[] = [
   {
     name: "Ananya Sharma",
     email: "ananya.sharma@vibhanu.com",
-    password: "VibhAnu@123",
     role: ROLES.ADMIN,
     department: "Executive Management",
     avatar: "AS",
@@ -73,7 +107,6 @@ export const ALIAS_DEMO_USERS = [
   {
     name: "Rohan Varma",
     email: "rohan.varma@vibhanu.com",
-    password: "VibhAnu@123",
     role: ROLES.MARKETING,
     department: "Growth & Acquisition",
     avatar: "RV",
@@ -81,7 +114,6 @@ export const ALIAS_DEMO_USERS = [
   {
     name: "Pooja Hegde",
     email: "pooja.hegde@vibhanu.com",
-    password: "VibhAnu@123",
     role: ROLES.COMMUNICATION,
     department: "Customer Outreach",
     avatar: "PH",
@@ -89,7 +121,6 @@ export const ALIAS_DEMO_USERS = [
   {
     name: "Vikram Malhotra",
     email: "vikram.malhotra@vibhanu.com",
-    password: "VibhAnu@123",
     role: ROLES.VIGILANCE,
     department: "Compliance & Vigilance",
     avatar: "VM",
@@ -97,7 +128,6 @@ export const ALIAS_DEMO_USERS = [
   {
     name: "Neha Sundaram",
     email: "neha.sundaram@vibhanu.com",
-    password: "VibhAnu@123",
     role: ROLES.SUPPORT,
     department: "Operations & Support",
     avatar: "NS",
@@ -105,7 +135,6 @@ export const ALIAS_DEMO_USERS = [
   {
     name: "Aditya Deshmukh",
     email: "aditya.deshmukh@vibhanu.com",
-    password: "VibhAnu@123",
     role: ROLES.SALES,
     department: "Enterprise Sales",
     avatar: "AD",
@@ -922,30 +951,39 @@ export function buildDemoLeads(demoAudioFile: string, salesUserId?: string) {
 export async function seedDatabase(): Promise<{
   usersCreated: number;
   usersUpdated: number;
+  usersSkipped: number;
   leadsCreated: number;
   leadsUpdated: number;
 }> {
+  // Fail closed before any database writes or file operations if production or missing/invalid config
+  const seedPassword = validateSeedEnvironment();
+
   const demoAudioFile = ensureDemoAudioFile();
 
-  // 1. Seed Users Idempotently
+  // 1. Seed Users Idempotently (Preserving and Skipping Existing Accounts)
   let usersCreated = 0;
-  let usersUpdated = 0;
+  let usersSkipped = 0;
+  const usersUpdated = 0;
   const allUsersToSeed = [...PRIMARY_DEMO_USERS, ...ALIAS_DEMO_USERS];
 
   for (const u of allUsersToSeed) {
     const existing = await User.findOne({ email: u.email });
     if (!existing) {
-      const user = new User(u);
+      const user = new User({
+        ...u,
+        password: seedPassword,
+      });
       await user.save();
       usersCreated++;
+      logger.info({ email: u.email, role: u.role }, "Seed user created");
     } else {
-      existing.name = u.name;
-      existing.role = u.role;
-      existing.department = u.department;
-      existing.avatar = u.avatar;
-      existing.password = u.password;
-      await existing.save();
-      usersUpdated++;
+      // Security: Never overwrite or modify existing user accounts in demo seed script.
+      // Roles, departments, passwords, and status of existing accounts are preserved unconditionally.
+      usersSkipped++;
+      logger.info(
+        { email: u.email, role: existing.role },
+        "Existing user preserved; skipping modification"
+      );
     }
   }
 
@@ -978,12 +1016,31 @@ export async function seedDatabase(): Promise<{
   return {
     usersCreated,
     usersUpdated,
+    usersSkipped,
     leadsCreated,
     leadsUpdated,
   };
 }
 
 export async function seedDatabaseIfEmpty() {
+  const rawEnv = process.env.NODE_ENV ? process.env.NODE_ENV.toLowerCase().trim() : "";
+  if (rawEnv !== "development" && rawEnv !== "test") {
+    logger.warn(
+      { nodeEnv: rawEnv || "missing" },
+      "seedDatabaseIfEmpty skipped: demo seeding is strictly restricted to 'development' or 'test' environments."
+    );
+    return;
+  }
+
+  // If SEED_DEFAULT_PASSWORD is not configured or does not meet minimum 12 chars, log warning and do not execute demo seed
+  const rawPassword = process.env.SEED_DEFAULT_PASSWORD?.trim();
+  if (!rawPassword || rawPassword.length < 12) {
+    logger.warn(
+      "Database has no users, but SEED_DEFAULT_PASSWORD is not configured or does not meet the 12-character minimum. Skipping automatic demo seed."
+    );
+    return;
+  }
+
   const count = await User.countDocuments();
   if (count === 0) {
     logger.info("Database has no users. Running initial seed...");
@@ -995,6 +1052,9 @@ export async function seedDatabaseIfEmpty() {
 if (require.main === module) {
   (async () => {
     try {
+      // Validate environment and seed credentials BEFORE connecting to MongoDB
+      validateSeedEnvironment();
+
       await connectDatabase();
       const result = await seedDatabase();
 
@@ -1005,6 +1065,7 @@ if (require.main === module) {
       console.log("Demo seed completed\n");
       console.log("Users:");
       console.log(`Created: ${result.usersCreated}`);
+      console.log(`Skipped: ${result.usersSkipped}`);
       console.log(`Updated: ${result.usersUpdated}\n`);
       console.log("Leads:");
       console.log(`Created: ${result.leadsCreated}`);

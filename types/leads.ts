@@ -29,6 +29,7 @@ export interface AudioData {
   waveformSample?: number[];
   publicId?: string;
   resourceType?: string;
+  protectionStatus?: "protected" | "legacy-public" | "private" | "unknown";
   /** Raw File object – only present for locally selected files before upload */
   _file?: File;
 }

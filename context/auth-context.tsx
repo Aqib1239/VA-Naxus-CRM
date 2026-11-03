@@ -4,18 +4,17 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { User, Role, Permission } from "@/types/auth";
 import { AuthService } from "@/services/auth.service";
-import { MOCK_USERS } from "@/constants/roles";
+import { api } from "@/services/api";
 import { toast } from "sonner";
 
 interface AuthContextType {
   user: User | null;
-  role: Role;
+  role: Role | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   isReady: boolean;
-  login: (email: string, password?: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  switchRole: (newRole: Role) => Promise<void>;
   hasPermission: (permission: Permission) => boolean;
   canAccessDepartment: (department: string) => boolean;
 }
@@ -37,10 +36,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const storedUser = AuthService.getCurrentUser();
         const storedToken = AuthService.getToken();
         if (storedUser && storedToken) {
-          // Validate existing session token against expiration & signature
+          // Validate existing session token against expiration
           const validToken = await AuthService.ensureSession();
           if (validToken && isMounted) {
-            setUser(storedUser);
+            // Authoritatively verify session with the backend
+            try {
+              const res = await api.get<{ user: User }>("/auth/me");
+              if (res.data?.user && isMounted) {
+                setUser(res.data.user);
+                AuthService.setCurrentUser(res.data.user, validToken);
+              } else if (isMounted) {
+                AuthService.clearAuth();
+                setUser(null);
+              }
+            } catch (err) {
+              console.warn("[AuthContext] Backend session verification failed, clearing auth:", err);
+              if (isMounted) {
+                AuthService.clearAuth();
+                setUser(null);
+              }
+            }
           } else if (isMounted) {
             AuthService.clearAuth();
             setUser(null);
@@ -68,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const login = async (email: string, password?: string) => {
+  const login = async (email: string, password: string) => {
     setIsAuthLoading(true);
     try {
       const session = await AuthService.login(email, password);
@@ -95,14 +110,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push("/login");
   };
 
-  const switchRole = async (newRole: Role) => {
-    const newUser = await AuthService.switchRole(newRole);
-    setUser(newUser);
-    toast.success(`Active Role Switched: ${newUser.role}`, {
-      description: `Viewing VA Nexus as ${newUser.name} (${newUser.department})`,
-    });
-  };
-
   const hasPermission = (permission: Permission): boolean => {
     if (!user) return false;
     return AuthService.hasPermission(user.role, permission);
@@ -117,13 +124,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        role: user ? user.role : ("ADMIN" as Role),
+        role: user ? user.role : null,
         isAuthenticated: !!user && isReady,
         isLoading: !isHydrated || !isReady || isAuthLoading,
         isReady,
         login,
         logout,
-        switchRole,
         hasPermission,
         canAccessDepartment,
       }}

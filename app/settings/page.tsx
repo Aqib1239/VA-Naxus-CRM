@@ -23,7 +23,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
-  const { user, role, switchRole } = useAuth();
+  const { user, role } = useAuth();
   const { resetToDefaultMockData } = useLeads();
   const { accent, setAccent } = useAccentTheme();
 
@@ -117,27 +117,11 @@ export default function SettingsPage() {
                   <p className="text-muted-foreground text-[13px]">{user?.email}</p>
                   <p className="text-[12px] text-muted-foreground font-mono mt-0.5">{user?.department}</p>
                 </div>
-                <RoleBadge role={user?.role ?? role} size="md" />
+                <RoleBadge role={user?.role || role || "ADMIN"} size="md" />
               </div>
 
-              <div>
-                <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground block mb-2.5">
-                  Switch Active Role (Live Demo Mode)
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {allRoles.map((r) => (
-                    <Button
-                      key={r}
-                      type="button"
-                      size="sm"
-                      variant={role === r ? "primary" : "outline"}
-                      onClick={() => switchRole(r)}
-                      className="text-[13px] h-8 justify-center rounded-xl"
-                    >
-                      {ROLE_CONFIGS[r].badgeLabel}
-                    </Button>
-                  ))}
-                </div>
+              <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-[12px] text-muted-foreground">
+                <span className="font-semibold text-foreground">Independent Role Access:</span> Account credentials, permissions, and departmental scopes are authoritatively managed and verified by the backend.
               </div>
             </div>
           </BentoCard>

@@ -13,6 +13,12 @@ export class UserService {
     role: UserRole;
     department: string;
   }): Promise<IUser> {
+    if (!data.password || data.password.length < 12) {
+      const err: any = new Error("Password must be at least 12 characters.");
+      err.statusCode = 422;
+      throw err;
+    }
+
     const existing = await User.findOne({ email: data.email.toLowerCase().trim() });
     if (existing) {
       const err: any = new Error(`User with email '${data.email}' already exists.`);

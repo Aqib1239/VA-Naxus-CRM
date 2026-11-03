@@ -27,7 +27,9 @@ class ApiClient {
   private refreshPromise: Promise<string | null> | null = null;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    this.baseUrl =
+      process.env.NEXT_PUBLIC_API_URL ||
+      (process.env.NODE_ENV === "production" ? "/api" : "http://localhost:5000/api");
   }
 
   /** Register auth refresher callback to seamlessly recover from missing/expired session */

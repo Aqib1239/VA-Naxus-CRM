@@ -11,6 +11,88 @@ import { generateToken } from "../utils/jwt";
 import { DeepgramService } from "../services/deepgram.service";
 import { TranscriptionJobService } from "../services/transcription-job.service";
 
+const mockTranscriptionResponse = async () => ({
+  metadata: {
+    duration: 54.3,
+    model_info: {
+      "nova-3": { language: "multi" },
+    },
+  },
+  results: {
+    channels: [
+      {
+        detected_language: "multi",
+        alternatives: [
+          {
+            transcript:
+              "Namaste sir, main VA Nexus se bol raha hoon regarding your enterprise enquiry. Yes, I am interested lekin implementation pricing thoda high lag raha hai.",
+            confidence: 0.96,
+            words: [
+              { word: "Namaste", start: 0.2, end: 0.8, confidence: 0.98, speaker: 0 },
+              { word: "sir", start: 0.9, end: 1.2, confidence: 0.95, speaker: 0 },
+              { word: "main", start: 1.3, end: 1.5, confidence: 0.96, speaker: 0 },
+              { word: "VA", start: 1.6, end: 1.9, confidence: 0.94, speaker: 0 },
+              { word: "Nexus", start: 2.0, end: 2.5, confidence: 0.97, speaker: 0 },
+              { word: "Yes", start: 3.5, end: 3.8, confidence: 0.99, speaker: 1 },
+              { word: "interested", start: 4.0, end: 4.6, confidence: 0.96, speaker: 1 },
+              { word: "lekin", start: 4.8, end: 5.2, confidence: 0.95, speaker: 1 },
+              { word: "pricing", start: 5.3, end: 5.8, confidence: 0.97, speaker: 1 },
+            ],
+            paragraphs: {
+              paragraphs: [
+                {
+                  speaker: 0,
+                  start: 0.2,
+                  end: 2.5,
+                  num_words: 5,
+                  sentences: [
+                    {
+                      text: "Namaste sir, main VA Nexus se bol raha hoon regarding your enterprise enquiry.",
+                      start: 0.2,
+                      end: 2.5,
+                    },
+                  ],
+                },
+                {
+                  speaker: 1,
+                  start: 3.5,
+                  end: 5.8,
+                  num_words: 4,
+                  sentences: [
+                    {
+                      text: "Yes, I am interested lekin implementation pricing thoda high lag raha hai.",
+                      start: 3.5,
+                      end: 5.8,
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+    utterances: [
+      {
+        id: "utt_0",
+        speaker: 0,
+        start: 0.2,
+        end: 2.5,
+        confidence: 0.96,
+        transcript: "Namaste sir, main VA Nexus se bol raha hoon regarding your enterprise enquiry.",
+      },
+      {
+        id: "utt_1",
+        speaker: 1,
+        start: 3.5,
+        end: 5.8,
+        confidence: 0.95,
+        transcript: "Yes, I am interested lekin implementation pricing thoda high lag raha hai.",
+      },
+    ],
+  },
+});
+
 // Mock Deepgram Client
 jest.mock("../config/deepgram", () => {
   return {
@@ -19,87 +101,8 @@ jest.mock("../config/deepgram", () => {
       listen: {
         v1: {
           media: {
-            transcribeUrl: jest.fn(async () => ({
-              metadata: {
-                duration: 54.3,
-                model_info: {
-                  "nova-3": { language: "multi" },
-                },
-              },
-              results: {
-                channels: [
-                  {
-                    detected_language: "multi",
-                    alternatives: [
-                      {
-                        transcript:
-                          "Namaste sir, main VA Nexus se bol raha hoon regarding your enterprise enquiry. Yes, I am interested lekin implementation pricing thoda high lag raha hai.",
-                        confidence: 0.96,
-                        words: [
-                          { word: "Namaste", start: 0.2, end: 0.8, confidence: 0.98, speaker: 0 },
-                          { word: "sir", start: 0.9, end: 1.2, confidence: 0.95, speaker: 0 },
-                          { word: "main", start: 1.3, end: 1.5, confidence: 0.96, speaker: 0 },
-                          { word: "VA", start: 1.6, end: 1.9, confidence: 0.94, speaker: 0 },
-                          { word: "Nexus", start: 2.0, end: 2.5, confidence: 0.97, speaker: 0 },
-                          { word: "Yes", start: 3.5, end: 3.8, confidence: 0.99, speaker: 1 },
-                          { word: "interested", start: 4.0, end: 4.6, confidence: 0.96, speaker: 1 },
-                          { word: "lekin", start: 4.8, end: 5.2, confidence: 0.95, speaker: 1 },
-                          { word: "pricing", start: 5.3, end: 5.8, confidence: 0.97, speaker: 1 },
-                        ],
-                        paragraphs: {
-                          paragraphs: [
-                            {
-                              speaker: 0,
-                              start: 0.2,
-                              end: 2.5,
-                              num_words: 5,
-                              sentences: [
-                                {
-                                  text: "Namaste sir, main VA Nexus se bol raha hoon regarding your enterprise enquiry.",
-                                  start: 0.2,
-                                  end: 2.5,
-                                },
-                              ],
-                            },
-                            {
-                              speaker: 1,
-                              start: 3.5,
-                              end: 5.8,
-                              num_words: 4,
-                              sentences: [
-                                {
-                                  text: "Yes, I am interested lekin implementation pricing thoda high lag raha hai.",
-                                  start: 3.5,
-                                  end: 5.8,
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                ],
-                utterances: [
-                  {
-                    id: "utt_0",
-                    speaker: 0,
-                    start: 0.2,
-                    end: 2.5,
-                    confidence: 0.96,
-                    transcript: "Namaste sir, main VA Nexus se bol raha hoon regarding your enterprise enquiry.",
-                  },
-                  {
-                    id: "utt_1",
-                    speaker: 1,
-                    start: 3.5,
-                    end: 5.8,
-                    confidence: 0.95,
-                    transcript: "Yes, I am interested lekin implementation pricing thoda high lag raha hai.",
-                  },
-                ],
-              },
-            })),
+            transcribeUrl: jest.fn(mockTranscriptionResponse),
+            transcribeFile: jest.fn(mockTranscriptionResponse),
           },
         },
       },

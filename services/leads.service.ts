@@ -16,16 +16,12 @@ import { api, PaginatedResponse } from "./api";
 // ─────────────────────────────────────────────────────────────
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "production" ? "/api" : "http://localhost:5000/api");
 
-/** Build the authorised audio streaming URL for a lead */
+/** Build the authorised audio streaming URL for a lead (never includes tokens in query string) */
 function buildAudioUrl(leadId: string): string {
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("vibhanu_crm_token") || localStorage.getItem("vibhanu_auth_token")
-      : null;
-  const tokenParam = token ? `?token=${encodeURIComponent(token)}` : "";
-  return `${BASE_URL}/leads/${leadId}/audio${tokenParam}`;
+  return `${BASE_URL}/leads/${leadId}/audio`;
 }
 
 /** Map a raw backend lead document to the frontend Lead interface */
@@ -43,54 +39,30 @@ function mapBackendLead(raw: any): Lead {
     let url = buildAudioUrl(leadId);
 
     if (rawUrl) {
-      // 1. Direct Cloudinary CDN URL — use directly without appending internal JWT token
-      if (rawUrl.startsWith("https://res.cloudinary.com/")) {
+      if (rawUrl.startsWith("blob:") || rawUrl.startsWith("data:")) {
+        // 1. Local client preview Blob/data URL
         url = rawUrl;
-      } else if (rawUrl.startsWith("blob:") || rawUrl.startsWith("data:")) {
-        // 2. Local client preview Blob/data URL
+      } else if (rawUrl.startsWith("/audio/") || rawUrl.startsWith("http://localhost:3000/audio/")) {
+        // 2. Safe local static audio asset in Next.js public/ directory
         url = rawUrl;
-      } else if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
-        // 3. Absolute URL: only append token if it targets our internal backend lead audio endpoint
-        if (rawUrl.includes("/leads/") && rawUrl.includes("/audio") && !/[?&]token=/.test(rawUrl)) {
-          const token =
-            typeof window !== "undefined"
-              ? localStorage.getItem("vibhanu_crm_token") || localStorage.getItem("vibhanu_auth_token")
-              : null;
-          url = token ? `${rawUrl}${rawUrl.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}` : rawUrl;
-        } else {
-          url = rawUrl;
-        }
       } else {
-        // 4. Relative backend path (e.g. legacy /api/leads/:id/audio)
-        const cleanPath = rawUrl.startsWith("/") ? rawUrl : `/${rawUrl}`;
-        let fullPath = cleanPath;
-        if (cleanPath.startsWith("/api/")) {
-          const root = BASE_URL.replace(/\/api$/, "");
-          fullPath = `${root}${cleanPath}`;
-        } else {
-          fullPath = `${BASE_URL}${cleanPath}`;
-        }
-        const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("vibhanu_crm_token") || localStorage.getItem("vibhanu_auth_token")
-            : null;
-        if (token && fullPath.includes("/leads/") && fullPath.includes("/audio") && !/[?&]token=/.test(fullPath)) {
-          url = `${fullPath}${fullPath.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}`;
-        } else {
-          url = fullPath;
-        }
+        // 3. All remote and Cloudinary media streams through the authorized backend proxy
+        url = buildAudioUrl(leadId);
       }
     }
 
-    const publicId =
-      rawAudio.publicId ||
-      (typeof rawAudio.storagePath === "string" && rawAudio.storagePath.includes("vibhanu-crm/")
-        ? rawAudio.storagePath
-        : undefined);
+    const protectionStatus: "protected" | "legacy-public" | "private" | "unknown" =
+      rawAudio.protectionStatus === "protected" ||
+      rawAudio.protectionStatus === "legacy-public" ||
+      rawAudio.protectionStatus === "private" ||
+      rawAudio.protectionStatus === "unknown"
+        ? rawAudio.protectionStatus
+        : "unknown";
 
     audioData = {
       id: rawAudio.id || rawAudio._id || rawAudio.filename || `aud-${leadId}`,
       url,
+      protectionStatus,
       fileName: rawAudio.fileName || rawAudio.originalName || rawAudio.filename || "recording.mp3",
       fileSize: rawAudio.fileSize || rawAudio.size || 0,
       duration: rawAudio.duration || 180,
@@ -100,7 +72,6 @@ function mapBackendLead(raw: any): Lead {
         ? (rawAudio.uploadedBy?.name || "System")
         : (rawAudio.uploadedBy || "System"),
       waveformSample: rawAudio.waveformSample,
-      publicId,
       resourceType: rawAudio.resourceType || "video",
     };
   }
@@ -278,6 +249,21 @@ export class LeadsService {
         ) || null
       );
     }
+  }
+
+  // ───────────────────────────────────────────────
+  // POST /api/leads/:id/audio/ticket — short-lived media ticket
+  // ───────────────────────────────────────────────
+  static async getAudioTicket(
+    leadId: string
+  ): Promise<{ ticket: string; leadId: string; expiresInSeconds: number; streamUrl: string }> {
+    const res = await api.post<{
+      ticket: string;
+      leadId: string;
+      expiresInSeconds: number;
+      streamUrl: string;
+    }>(`/leads/${leadId}/audio/ticket`);
+    return res.data;
   }
 
   // ───────────────────────────────────────────────

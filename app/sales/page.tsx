@@ -242,6 +242,9 @@ export default function SalesPage() {
 
                     <AudioPlayer
                       src={selectedLead.vigilanceDetails?.audio?.url}
+                      leadId={selectedLead.id}
+                      protectionStatus={selectedLead.vigilanceDetails?.audio?.protectionStatus}
+                      recordingId={selectedLead.leadCode}
                       fileName={selectedLead.vigilanceDetails?.audio?.fileName || "Vigilance_Call_Recording.mp3"}
                       fileSize={selectedLead.vigilanceDetails?.audio?.fileSize}
                       durationSeconds={selectedLead.vigilanceDetails?.audio?.duration || 180}

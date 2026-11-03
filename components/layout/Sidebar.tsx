@@ -79,6 +79,7 @@ export function Sidebar({
   };
 
   const isNavVisible = (item: NavItem): boolean => {
+    if (!role) return false;
     if (role === "ADMIN") return true;
     if (!item.allowedRoles) return true;
     return item.allowedRoles.includes(role);

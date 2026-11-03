@@ -4,32 +4,10 @@ import { IAuthUser } from "../types/auth.types";
 
 export class AuthService {
   static async login(email: string, password: string): Promise<{ user: IAuthUser; token: string }> {
-    const normalizedInput = email.toLowerCase().trim();
-    
-    // Map role keywords and department aliases to seeded emails
-    const aliasMap: Record<string, string> = {
-      "admin": "admin@vibhanu.com",
-      "ananya.sharma@vibhanu.com": "admin@vibhanu.com",
-      "marketing": "marketing@vibhanu.com",
-      "rohan.varma@vibhanu.com": "marketing@vibhanu.com",
-      "communication": "communication@vibhanu.com",
-      "pooja.hegde@vibhanu.com": "communication@vibhanu.com",
-      "vigilance": "vigilance@vibhanu.com",
-      "vikram.malhotra@vibhanu.com": "vigilance@vibhanu.com",
-      "support": "support@vibhanu.com",
-      "neha.sundaram@vibhanu.com": "support@vibhanu.com",
-      "sales": "sales@vibhanu.com",
-      "aditya.deshmukh@vibhanu.com": "sales@vibhanu.com",
-    };
+    const normalizedEmail = email.toLowerCase().trim();
 
-    const targetEmail = aliasMap[normalizedInput] || normalizedInput;
-    const user = await User.findOne({
-      $or: [
-        { email: targetEmail },
-        { email: normalizedInput },
-        { role: normalizedInput.toUpperCase() }
-      ]
-    }).select("+password +isActive");
+    // Exact email lookup only — no role-based account querying or alias shortcuts
+    const user = await User.findOne({ email: normalizedEmail }).select("+password +isActive");
 
     if (!user) {
       const error: any = new Error("Invalid email or password");
@@ -43,9 +21,9 @@ export class AuthService {
       throw error;
     }
 
+    // Secure bcrypt password verification only — master/demo passwords completely removed
     const isMatch = await user.comparePassword(password);
-    const isDemoMatch = password === "VibhAnu@123" || password === "Password@123" || password === "password123";
-    if (!isMatch && !isDemoMatch) {
+    if (!isMatch) {
       const error: any = new Error("Invalid email or password");
       error.statusCode = 401;
       throw error;
