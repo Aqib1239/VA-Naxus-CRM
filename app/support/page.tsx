@@ -14,11 +14,11 @@ import { DepartmentBadge } from "@/components/ui/status-badge";
 import { AudioPlayer } from "@/components/ui/audio-player";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Lead } from "@/types/leads";
-import { 
-  Headphones, 
-  CheckSquare, 
-  Phone, 
-  TrendingUp, 
+import {
+  Headphones,
+  CheckSquare,
+  Phone,
+  TrendingUp,
   UserCheck
 } from "lucide-react";
 
@@ -58,7 +58,15 @@ export default function SupportPage() {
   const isDateVerified = watch("isDateVerified");
   const isTimeVerified = watch("isTimeVerified");
   const isAddressVerified = watch("isAddressVerified");
-  const allVerified = isDateVerified && isTimeVerified && isAddressVerified;
+  const verifiedCount = [
+    isDateVerified,
+    isTimeVerified,
+    isAddressVerified,
+  ].filter(Boolean).length;
+
+  const progressPercentage = (verifiedCount / 3) * 100;
+
+  const allVerified = verifiedCount === 3;
 
   useEffect(() => {
     if (selectedLead) {
@@ -121,11 +129,10 @@ export default function SupportPage() {
                   <div
                     key={lead.id}
                     onClick={() => setSelectedLead(lead)}
-                    className={`p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
-                      isSelected
-                        ? "border-teal-500/60 bg-teal-500/10 shadow-neu-inset"
-                        : "border-border/80 bg-card shadow-neu-raised-sm hover:shadow-neu-btn-hover hover:border-border"
-                    }`}
+                    className={`p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isSelected
+                      ? "border-teal-500/60 bg-teal-500/10 shadow-neu-inset"
+                      : "border-border/80 bg-card shadow-neu-raised-sm hover:shadow-neu-btn-hover hover:border-border"
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[14px] font-semibold text-foreground truncate">{lead.name}</span>
@@ -174,10 +181,10 @@ export default function SupportPage() {
                   </Link>
                 </CardHeader>
 
-                <CardContent className="p-5 space-y-4">
+                <CardContent className="p-2 space-y-4">
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     {/* Information Summary */}
-                    <div className="rounded-2xl border border-border/80 bg-muted/20 shadow-neu-inset-sm p-4 space-y-3 text-[13px]">
+                    <div className="rounded-2xl border border-border/80 bg-muted/20 shadow-neu-inset-sm p-2.5 space-y-3 text-[13px]">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <span className="text-muted-foreground block text-[11px] font-mono uppercase tracking-wider">Prospect:</span>
@@ -221,16 +228,32 @@ export default function SupportPage() {
                         <Label required className="text-[14px] font-semibold text-foreground">
                           3-Point Checklist Verification
                         </Label>
-                        <span className="text-[11px] font-mono text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2.5 py-0.5 rounded-md font-semibold">
-                          All 3 required
+
+                        {/* Dynamic Completion Badge */}
+                        <span className="text-[11px] font-mono text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2.5 py-0.5 rounded-md font-semibold tabular-nums">
+                          {verifiedCount}/3
                         </span>
+                      </div>
+
+                      {/* Dynamic Progress Bar */}
+                      <div
+                        className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden"
+                        role="progressbar"
+                        aria-valuenow={verifiedCount}
+                        aria-valuemin={0}
+                        aria-valuemax={3}
+                        aria-label="Checklist verification progress"
+                      >
+                        <div
+                          className="bg-emerald-500 h-full rounded-full transition-all duration-300 ease-in-out"
+                          style={{ width: `${progressPercentage}%` }}
+                        />
                       </div>
 
                       <div className="space-y-2.5">
                         {/* Check 1 */}
-                        <label className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
-                          isDateVerified ? "border-teal-500/50 bg-teal-500/10 shadow-neu-inset" : "border-border/80 bg-card shadow-neu-raised-sm hover:shadow-neu-btn-hover"
-                        }`}>
+                        <label className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isDateVerified ? "border-teal-500/50 bg-teal-500/10 shadow-neu-inset" : "border-border/80 bg-card shadow-neu-raised-sm hover:shadow-neu-btn-hover"
+                          }`}>
                           <input
                             type="checkbox"
                             className="mt-0.5 h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500 cursor-pointer accent-teal-600"
@@ -247,9 +270,8 @@ export default function SupportPage() {
                         </label>
 
                         {/* Check 2 */}
-                        <label className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
-                          isTimeVerified ? "border-teal-500/50 bg-teal-500/10 shadow-neu-inset" : "border-border/80 bg-card shadow-neu-raised-sm hover:shadow-neu-btn-hover"
-                        }`}>
+                        <label className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isTimeVerified ? "border-teal-500/50 bg-teal-500/10 shadow-neu-inset" : "border-border/80 bg-card shadow-neu-raised-sm hover:shadow-neu-btn-hover"
+                          }`}>
                           <input
                             type="checkbox"
                             className="mt-0.5 h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500 cursor-pointer accent-teal-600"
@@ -266,9 +288,8 @@ export default function SupportPage() {
                         </label>
 
                         {/* Check 3 */}
-                        <label className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
-                          isAddressVerified ? "border-teal-500/50 bg-teal-500/10 shadow-neu-inset" : "border-border/80 bg-card shadow-neu-raised-sm hover:shadow-neu-btn-hover"
-                        }`}>
+                        <label className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isAddressVerified ? "border-teal-500/50 bg-teal-500/10 shadow-neu-inset" : "border-border/80 bg-card shadow-neu-raised-sm hover:shadow-neu-btn-hover"
+                          }`}>
                           <input
                             type="checkbox"
                             className="mt-0.5 h-4 w-4 rounded border-border text-teal-600 focus:ring-teal-500 cursor-pointer accent-teal-600"

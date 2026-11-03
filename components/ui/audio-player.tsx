@@ -295,6 +295,23 @@ export function AudioPlayer({
   const [resolvedSrc, setResolvedSrc] = useState<string | undefined>(undefined);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Call this whenever volume changes (drag OR mute toggle)
+  const revealTooltip = useCallback(() => {
+    setShowTooltip(true);
+    if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
+    tooltipTimeoutRef.current = setTimeout(() => setShowTooltip(false), 4000);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
+    };
+  }, []);
+
   useEffect(() => {
     onNaturalEndRef.current = onNaturalEnd;
   }, [onNaturalEnd]);
@@ -392,8 +409,8 @@ export function AudioPlayer({
                 status === 404
                   ? "Audio recording not found for this lead."
                   : status === 403 || status === 401
-                  ? "Access to this audio recording is restricted for your role."
-                  : "Unable to retrieve audio playback session."
+                    ? "Access to this audio recording is restricted for your role."
+                    : "Unable to retrieve audio playback session."
               );
             }
           }
@@ -432,7 +449,7 @@ export function AudioPlayer({
         setCurrentTime(restorePos);
         savedPlaybackPositionRef.current = null;
         if (wasPlayingBeforeRenewalRef.current) {
-          audio.play().catch(() => {});
+          audio.play().catch(() => { });
           wasPlayingBeforeRenewalRef.current = false;
         }
       }
@@ -500,8 +517,8 @@ export function AudioPlayer({
         code === 2
           ? "Network error occurred while loading audio."
           : code === 4
-          ? "Audio recording is currently unavailable or format not supported."
-          : "Audio file is temporarily unavailable."
+            ? "Audio recording is currently unavailable or format not supported."
+            : "Audio file is temporarily unavailable."
       );
       setHasError(true);
       setIsPlaying(false);
@@ -605,7 +622,7 @@ export function AudioPlayer({
   useEffect(() => {
     if (typeof targetSeekTime === "number" && isFinite(targetSeekTime) && audioRef.current) {
       seekTo(targetSeekTime);
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play().catch(() => { });
     }
   }, [targetSeekTime, seekTo]);
 
@@ -649,6 +666,7 @@ export function AudioPlayer({
       audio.muted = true;
       setIsMuted(true);
     }
+    revealTooltip();
   };
 
   const handleVolume = (val: number) => {
@@ -661,6 +679,7 @@ export function AudioPlayer({
       audio.muted = v === 0;
     }
     setIsMuted(v === 0);
+    revealTooltip();
   };
 
   /* -------------------------------- Derived -------------------------------- */
@@ -702,16 +721,16 @@ export function AudioPlayer({
     protectionStatus === "protected"
       ? "Protected customer recording"
       : protectionStatus === "private"
-      ? "Private storage (Derived verification required)"
-      : protectionStatus === "legacy-public"
-      ? "Legacy customer recording (Public storage)"
-      : "Customer call recording";
+        ? "Private storage (Derived verification required)"
+        : protectionStatus === "legacy-public"
+          ? "Legacy customer recording (Public storage)"
+          : "Customer call recording";
   const effectiveSupportingText = supportingText || defaultSupportingText;
 
   return (
     <div
       className={cn(
-        "w-full rounded-2xl border bg-card p-4 shadow-neu-raised transition-all duration-300",
+        "w-full rounded-2xl border bg-card p-2 shadow-neu-raised transition-all duration-300",
         isEndedNaturally ? "border-emerald-500/40 bg-emerald-500/5 shadow-[0_4px_16px_rgba(16,185,129,0.12)]" : "border-border/80",
         className
       )}
@@ -731,14 +750,14 @@ export function AudioPlayer({
               protectionStatus === "legacy-public"
                 ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20"
                 : protectionStatus === "private"
-                ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
-                : protectionStatus === "protected" && isEndedNaturally
-                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                : protectionStatus === "protected" && isPlaying
-                ? "bg-primary/15 text-primary border border-primary/20"
-                : protectionStatus === "protected"
-                ? "bg-primary/10 text-primary border border-primary/20"
-                : "bg-muted/80 text-muted-foreground border border-border/80"
+                  ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                  : protectionStatus === "protected" && isEndedNaturally
+                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                    : protectionStatus === "protected" && isPlaying
+                      ? "bg-primary/15 text-primary border border-primary/20"
+                      : protectionStatus === "protected"
+                        ? "bg-primary/10 text-primary border border-primary/20"
+                        : "bg-muted/80 text-muted-foreground border border-border/80"
             )}
           >
             {protectionStatus === "protected" ? (
@@ -911,14 +930,14 @@ export function AudioPlayer({
       )}
 
       {/* Waveform scrubber */}
-      <div className="mt-4">
+      <div className="mt-3">
         <Slider
           value={displayTime}
           max={duration}
           step={1}
           ariaLabel="Seek audio position"
           ariaValueText={`${formatSeconds(displayTime)} of ${formatSeconds(duration)}`}
-          className="h-14 rounded-xl shadow-neu-inset bg-muted/40 px-3 py-2 border border-border/60"
+          className="h-14 rounded-xl shadow-neu-inset bg-muted/40 px-3 py-2 border border-border dark:border-slate-700/90"
           onChange={(v) => setScrubTime(limitSeek(v))}
           onCommit={(v) => {
             seekTo(v);
@@ -962,7 +981,7 @@ export function AudioPlayer({
       {/* Controls Bar */}
       <div className="mt-3 flex items-center justify-between gap-3">
         {/* Transport */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-0.5 sm:gap-1.5">
           <button
             type="button"
             onClick={handleRestart}
@@ -992,7 +1011,7 @@ export function AudioPlayer({
             disabled={hasError}
             aria-label={isPlaying ? "Pause audio playback" : "Play audio playback"}
             className={cn(
-              "relative mx-1.5 flex h-11 w-11 items-center justify-center rounded-full transition-all duration-300",
+              "relative mx-1.5 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full transition-all duration-300",
               "hover:scale-105 active:scale-95 disabled:pointer-events-none disabled:opacity-50",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               isEndedNaturally && !isPlaying
@@ -1003,7 +1022,7 @@ export function AudioPlayer({
           >
             <Play
               className={cn(
-                "absolute h-5 w-5 fill-current transition-all duration-200",
+                "absolute h-4 w-4 sm:h-5 sm:w-5 fill-current transition-all duration-200",
                 isPlaying || isBuffering
                   ? "scale-50 opacity-0 -rotate-90"
                   : "scale-100 opacity-100 rotate-0"
@@ -1011,7 +1030,7 @@ export function AudioPlayer({
             />
             <Pause
               className={cn(
-                "absolute h-5 w-5 fill-current transition-all duration-200",
+                "absolute h-4 w-4 sm:h-5 sm:w-5 fill-current transition-all duration-200",
                 isPlaying && !isBuffering
                   ? "scale-100 opacity-100 rotate-0"
                   : "scale-50 opacity-0 rotate-90"
@@ -1039,12 +1058,12 @@ export function AudioPlayer({
         </div>
 
         {/* Volume */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center bg-green-200 border border-slate-300 dark:border-slate-700 shadow-neu-inset-sm rounded-full py-1.5 px-2 sm:py-2 sm:px-3 gap-1.5">
           <button
             type="button"
             onClick={toggleMute}
             aria-label={effectiveVolume === 0 ? "Unmute audio" : "Mute audio"}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground border border-border/70 bg-card shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset transition-all duration-200 hover:text-foreground"
+            className="flex h-6 w-6 sm:h-9 sm:w-9 items-center justify-center rounded-full text-muted-foreground border border-slate-400 dark:border-slate-800 bg-card shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset transition-all duration-200 hover:text-foreground"
           >
             <VolumeIcon className="h-[18px] w-[18px]" />
           </button>
@@ -1055,25 +1074,41 @@ export function AudioPlayer({
             step={0.05}
             ariaLabel="Volume"
             ariaValueText={`${Math.round(effectiveVolume * 100)} percent`}
-            className="mx-1.5 w-20 py-3 sm:w-24"
+            className="mx-1.5 w-16 py-1 sm:w-24"
             onChange={handleVolume}
           >
             {({ percent, dragging }) => (
-              <div className="relative h-2 w-full rounded-full shadow-neu-inset-sm bg-muted/70 border border-border/60">
+              <div className="relative">
+                {/* Floating percentage badge — auto-hides after 3s of inactivity */}
                 <div
                   className={cn(
-                    "absolute inset-y-0 left-0 rounded-full bg-primary",
-                    !dragging && "transition-[width] duration-150 ease-out"
-                  )}
-                  style={{ width: `${percent}%` }}
-                />
-                <div
-                  className={cn(
-                    "pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border/80 bg-card shadow-neu-btn transition-transform duration-150",
-                    dragging ? "scale-110 shadow-neu-inset" : "scale-100 group-hover:scale-105"
+                    "pointer-events-none absolute -top-8 -translate-x-1/2 rounded-md bg-foreground text-background px-1.5 py-0.5 text-[12px] font-semibold font-mono tabular-nums shadow-md whitespace-nowrap",
+                    "transition-opacity duration-200",
+                    showTooltip || dragging ? "opacity-100" : "opacity-0"
                   )}
                   style={{ left: `${percent}%` }}
-                />
+                >
+                  {Math.round(effectiveVolume * 100)}%
+                  <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-foreground" />
+                </div>
+
+                {/* Track */}
+                <div className="relative h-1.5 sm:h-2 w-full rounded-full shadow-neu-inset-sm bg-muted/70 border border-border/60">
+                  <div
+                    className={cn(
+                      "absolute inset-y-0 left-0 rounded-full bg-primary",
+                      !dragging && "transition-[width] duration-150 ease-out"
+                    )}
+                    style={{ width: `${percent}%` }}
+                  />
+                  <div
+                    className={cn(
+                      "pointer-events-none absolute top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-green-100 bg-green-700 transition-transform duration-150",
+                      dragging ? "scale-110 shadow-neu-inset-sm" : "scale-100 group-hover:scale-105"
+                    )}
+                    style={{ left: `${percent}%` }}
+                  />
+                </div>
               </div>
             )}
           </Slider>
