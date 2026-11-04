@@ -18,14 +18,14 @@ import { WorkflowTimeline } from "@/components/ui/workflow-timeline";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Lead } from "@/types/leads";
 import { formatDateTime } from "@/lib/utils";
-import { 
-  TrendingUp, 
-  CheckCircle2, 
-  Lock, 
-  Unlock, 
-  DollarSign, 
-  FileText, 
-  Phone, 
+import {
+  TrendingUp,
+  CheckCircle2,
+  Lock,
+  Unlock,
+  DollarSign,
+  FileText,
+  Phone,
   Sparkles,
   Award
 } from "lucide-react";
@@ -131,11 +131,10 @@ export default function SalesPage() {
                   <div
                     key={lead.id}
                     onClick={() => setSelectedLead(lead)}
-                    className={`p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
-                      isSelected
+                    className={`p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isSelected
                         ? "border-purple-500/60 bg-purple-500/10 shadow-neu-inset"
                         : "border-border/80 bg-card shadow-neu-raised-sm hover:shadow-neu-btn-hover hover:border-border"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[14px] font-semibold text-foreground truncate">{lead.name}</span>
@@ -171,35 +170,50 @@ export default function SalesPage() {
           <div className="lg:col-span-8">
             {selectedLead && (
               <Card className="rounded-2xl border border-border/80 shadow-neu-raised">
-                <CardHeader className="flex flex-row items-center justify-between py-4 px-5 border-b border-border/70">
-                  <div>
-                    <div className="flex items-center gap-2.5">
-                      <CardTitle className="text-base font-semibold">{selectedLead.name}</CardTitle>
-                      <span className="font-mono text-[12px] text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                <CardHeader className="flex flex-col gap-3 border-b border-border/70 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:px-5 sm:py-4">
+                  {/* Left: title + meta + description */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                      <CardTitle className="min-w-0 break-words text-[15px] font-semibold leading-tight sm:text-base">
+                        {selectedLead.name}
+                      </CardTitle>
+
+                      <span className="shrink-0 whitespace-nowrap border rounded-md bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:px-2 sm:text-[12px]">
                         {selectedLead.leadCode}
                       </span>
+
                       {selectedLead.currentDepartment === "claimed" ? (
-                        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md font-mono">
-                          Claimed & Closed
+                        <span className="shrink-0 whitespace-nowrap rounded-md bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 sm:text-[11px]">
+                          Claimed &amp; Closed
                         </span>
                       ) : (
-                        <span className="text-[11px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-md font-mono">
+                        <span className="shrink-0 whitespace-nowrap border border-border rounded-md bg-purple-500/10 px-1 py-0.5 font-mono text-[10px] font-medium text-purple-600 dark:text-purple-400 sm:text-[11px]">
                           Awaiting Claim
                         </span>
                       )}
                     </div>
-                    <CardDescription className="text-[13px] mt-0.5">
+
+                    <CardDescription className="mt-2 break-words text-[12px] leading-snug sm:text-[13px] italic">
                       Listen to the compliance verification voice recording before closing this account
                     </CardDescription>
                   </div>
-                  <Link href={`/leads/${selectedLead.id}`}>
-                    <Button variant="ghost" size="sm" className="h-8 text-[13px]">
+
+                  {/* Right: action — full width on mobile, auto on sm+ */}
+                  <Link
+                    href={`/leads/${selectedLead.id}`}
+                    className="shrink-0 sm:self-start"
+                  >
+                    <Button
+                      variant="success"
+                      size="sm"
+                      className="h-9 w-full text-[13px] sm:h-8 sm:w-auto"
+                    >
                       History
                     </Button>
                   </Link>
                 </CardHeader>
 
-                <CardContent className="p-5 space-y-5">
+                <CardContent className="p-2.5 sm:p-5 space-y-5">
                   {/* Lead Information */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
                     <div className="p-3.5 rounded-xl border border-border bg-card space-y-1">
@@ -226,7 +240,7 @@ export default function SalesPage() {
 
                   {/* MANDATORY AUDIO PLAYER SECTION */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mt-8">
                       <Label className="text-[14px] font-semibold text-foreground flex items-center gap-2">
                         {isAudioCompleted ? (
                           <Unlock className="w-4 h-4 text-emerald-500" />
@@ -235,7 +249,7 @@ export default function SalesPage() {
                         )}
                         Compliance Voice Verification Recording
                       </Label>
-                      <span className="text-[11px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                      <span className="hidden sm:block text-[11px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
                         Audio Gating
                       </span>
                     </div>

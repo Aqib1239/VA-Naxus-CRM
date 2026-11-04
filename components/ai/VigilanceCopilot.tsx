@@ -97,12 +97,12 @@ export function VigilanceCopilot({ leadId, className }: VigilanceCopilotProps) {
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">Vigilance Copilot</h3>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground italic">
               Evidence-based verification audit & compliance checklist
             </p>
           </div>
         </div>
-        <AiBadge />
+        <AiBadge className="hidden sm:flex" />
       </div>
 
       {/* Mandatory Human Responsibility */}

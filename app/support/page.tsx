@@ -19,7 +19,8 @@ import {
   CheckSquare,
   Phone,
   TrendingUp,
-  UserCheck
+  UserCheck,
+  UserIcon
 } from "lucide-react";
 
 export default function SupportPage() {
@@ -162,23 +163,36 @@ export default function SupportPage() {
           <div className="lg:col-span-8">
             {selectedLead && (
               <Card className="rounded-2xl border border-border/80 shadow-neu-raised">
-                <CardHeader className="flex flex-row items-center justify-between py-4 px-5 border-b border-border/70">
-                  <div>
-                    <div className="flex items-center gap-2.5">
-                      <CardTitle className="text-base font-semibold">Verify & Allocate: {selectedLead.name}</CardTitle>
-                      <span className="font-mono text-[12px] text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                <CardHeader className="flex flex-row items-start justify-between gap-3 px-4 py-4 sm:px-5 border-b border-border/70">
+                  {/* Left: title block */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <CardTitle className="text-base font-semibold leading-tight break-words">
+                        Verify &amp; Allocate: {selectedLead.name}
+                      </CardTitle>
+                      <span className="font-mono text-[11px] sm:text-[12px] text-muted-foreground bg-muted px-1.5 py-0.5 border border-border rounded-md whitespace-nowrap">
                         {selectedLead.leadCode}
                       </span>
                     </div>
-                    <CardDescription className="text-[13px] mt-0.5">
+                    <CardDescription className="text-[12px] sm:text-[13px] mt-1 leading-snug">
                       Confirm 3-point checklist to transfer lead into the active Sales Executive queue
                     </CardDescription>
                   </div>
-                  <Link href={`/leads/${selectedLead.id}`}>
-                    <Button variant="ghost" size="sm" className="h-8 text-[13px]">
-                      Profile
-                    </Button>
-                  </Link>
+
+                  {/* Right: action */}
+                  <div className="shrink-0">
+                    <Link href={`/leads/${selectedLead.id}`}>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="p-1.5 h-10 w-10 rounded-full sm:px-3 text-[13px]"
+                        aria-label="View lead profile"
+                      >
+                        <UserIcon className="h-6 w-6 sm:hidden" />
+                        <span className="hidden sm:inline">Profile</span>
+                      </Button>
+                    </Link>
+                  </div>
                 </CardHeader>
 
                 <CardContent className="p-2 space-y-4">

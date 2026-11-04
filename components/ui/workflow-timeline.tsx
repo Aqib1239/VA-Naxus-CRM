@@ -57,7 +57,7 @@ export function WorkflowTimeline({ history, className }: WorkflowTimelineProps) 
                 </time>
               </div>
 
-              <p className="text-[13px] text-muted-foreground leading-relaxed">
+              <p className="text-[13px] text-muted-foreground leading-relaxed break-words [overflow-wrap:anywhere]">
                 {item.description}
               </p>
 

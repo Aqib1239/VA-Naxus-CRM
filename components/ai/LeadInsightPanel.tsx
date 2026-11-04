@@ -74,7 +74,7 @@ export function LeadInsightPanel({ leadId, className }: LeadInsightPanelProps) {
             <p className="text-[11px] text-muted-foreground">Explainable AI priority & conversion signals</p>
           </div>
         </div>
-        <AiBadge />
+        <AiBadge className="hidden sm:flex" />
       </div>
 
       {/* Initial Empty State */}

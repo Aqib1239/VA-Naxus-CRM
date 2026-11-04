@@ -79,12 +79,12 @@ export function SalesCopilot({ leadId, className }: SalesCopilotProps) {
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">Sales Copilot</h3>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground italic">
               Personalized talking points, objection handling & call scripts
             </p>
           </div>
         </div>
-        <AiBadge />
+        <AiBadge className="hidden sm:flex" />
       </div>
 
       {/* Mandatory Human Gate Reminder */}

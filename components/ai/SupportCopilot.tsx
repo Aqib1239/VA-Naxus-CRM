@@ -73,12 +73,12 @@ export function SupportCopilot({ leadId, className }: SupportCopilotProps) {
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">Support Copilot</h3>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground italic">
               3-point checklist audit & sales allocation readiness
             </p>
           </div>
         </div>
-        <AiBadge />
+        <AiBadge className="hidden sm:flex" />
       </div>
 
       {/* Empty State */}

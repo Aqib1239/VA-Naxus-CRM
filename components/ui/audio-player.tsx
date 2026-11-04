@@ -771,18 +771,18 @@ export function AudioPlayer({
             )}
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1 flex-wrap">
               <h4 className="truncate text-[14px] font-semibold text-foreground tracking-tight">
                 {displayTitle}
               </h4>
               {displayId && (
-                <span className="inline-flex items-center rounded-md border border-border/70 bg-muted/70 px-1.5 py-0.5 font-mono text-[11px] font-medium text-muted-foreground shadow-2xs">
+                <span className="inline-flex items-center rounded-md border border-border bg-muted/70 px-1.5 py-0.5 font-mono text-[11px] font-medium text-muted-foreground shadow-2xs">
                   {displayId}
                 </span>
               )}
             </div>
-            <p className="text-[12px] text-muted-foreground tabular-nums flex items-center gap-1.5 flex-wrap">
-              <span>{effectiveSupportingText}</span>
+            <p className="text-[12px] text-muted-foreground tabular-nums flex items-center gap-1.5 flex-wrap mt-1">
+              <span className="hidden sm:inline">{effectiveSupportingText}</span>
               <span className="opacity-40">•</span>
               <span className="font-mono">{formatSeconds(duration)}</span>
               {fileSize && (

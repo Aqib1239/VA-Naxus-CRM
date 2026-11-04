@@ -82,7 +82,8 @@ export function BentoCard({
       {...(props as any)}
     >
       {(title || action || badge) && (
-        <div className="flex items-center justify-between p-5 sm:p-6 border-b border-border/50 gap-3">
+        <div className="flex flex-col items-start justify-between p-3 sm:p-5 border-b border-border/50 gap-3">
+           {badge}
           <div>
             <div className="flex items-center gap-2.5">
               {title && (
@@ -90,7 +91,6 @@ export function BentoCard({
                   {title}
                 </h3>
               )}
-              {badge}
             </div>
             {description && (
               <p className="text-[13px] text-muted-foreground mt-0.5 leading-relaxed">
@@ -101,7 +101,7 @@ export function BentoCard({
           {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
-      <div className={cn(!noPadding && "p-5 sm:p-6", "flex-1")}>{children}</div>
+      <div className={cn(!noPadding && "p-2.5 sm:p-6", "flex-1")}>{children}</div>
     </motion.div>
   );
 }
