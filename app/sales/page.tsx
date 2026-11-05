@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { salesClaimSchema, SalesClaimFormData } from "@/schemas/leads.schema";
@@ -18,19 +19,21 @@ import { WorkflowTimeline } from "@/components/ui/workflow-timeline";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Lead } from "@/types/leads";
 import { formatDateTime } from "@/lib/utils";
-import { 
-  TrendingUp, 
-  CheckCircle2, 
-  Lock, 
-  Unlock, 
-  DollarSign, 
-  FileText, 
-  Phone, 
+import {
+  TrendingUp,
+  CheckCircle2,
+  Lock,
+  Unlock,
+  DollarSign,
+  FileText,
+  Phone,
   Sparkles,
-  Award
+  Award,
+  RotateCcw,
 } from "lucide-react";
 
 export default function SalesPage() {
+  const router = useRouter();
   const { leads, markAudioListenCompleted, claimSalesLead } = useLeads();
   const { user } = useAuth();
 
@@ -109,17 +112,17 @@ export default function SalesPage() {
           title="No leads in the Sales queue"
           description="Leads will arrive here once the Support team finishes the 3-point checklist allocation."
           actionLabel="View Support Queue"
-          onAction={() => window.location.href = "/support"}
+          onAction={() => router.push("/support")}
         />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column: Sales Deals Queue */}
           <div className="lg:col-span-4 space-y-3">
             <div className="flex items-center justify-between px-1">
-              <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider font-mono">
+              <h3 className="text-ui-sm font-semibold text-muted-foreground uppercase tracking-wider font-mono">
                 Sales Deals ({salesLeads.length})
               </h3>
-              <span className="text-[12px] text-muted-foreground">Select deal</span>
+              <span className="text-xs text-muted-foreground">Select deal</span>
             </div>
 
             <div className="space-y-2 max-h-[620px] overflow-y-auto pr-1">
@@ -131,32 +134,31 @@ export default function SalesPage() {
                   <div
                     key={lead.id}
                     onClick={() => setSelectedLead(lead)}
-                    className={`p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
-                      isSelected
+                    className={`p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isSelected
                         ? "border-purple-500/60 bg-purple-500/10 shadow-neu-inset"
                         : "border-border/80 bg-card shadow-neu-raised-sm hover:shadow-neu-btn-hover hover:border-border"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[14px] font-semibold text-foreground truncate">{lead.name}</span>
-                      <span className="text-[11px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                      <span className="text-sm font-semibold text-foreground truncate">{lead.name}</span>
+                      <span className="text-2xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
                         {lead.leadCode}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground font-mono">
+                    <div className="flex items-center gap-1.5 text-ui-sm text-muted-foreground font-mono">
                       <Phone className="w-3.5 h-3.5 text-muted-foreground/70" />
                       <span>{lead.contactNumber}</span>
                     </div>
 
-                    <div className="mt-2.5 flex items-center justify-between text-[12px]">
+                    <div className="mt-2.5 flex items-center justify-between text-xs">
                       <span className="text-muted-foreground">{lead.city}</span>
                       {isClaimed ? (
-                        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md font-mono">
+                        <span className="text-2xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md font-mono">
                           Claimed
                         </span>
                       ) : (
-                        <span className="text-[11px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-md font-mono">
+                        <span className="text-2xs font-semibold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-md font-mono">
                           Awaiting Claim
                         </span>
                       )}
@@ -171,54 +173,70 @@ export default function SalesPage() {
           <div className="lg:col-span-8">
             {selectedLead && (
               <Card className="rounded-2xl border border-border/80 shadow-neu-raised">
-                <CardHeader className="flex flex-row items-center justify-between py-4 px-5 border-b border-border/70">
-                  <div>
-                    <div className="flex items-center gap-2.5">
-                      <CardTitle className="text-base font-semibold">{selectedLead.name}</CardTitle>
-                      <span className="font-mono text-[12px] text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                <CardHeader className="flex flex-col gap-3 border-b border-border/70 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:px-5 sm:py-4">
+                  {/* Left: title + meta + description */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                      <CardTitle className="min-w-0 break-words text-base font-semibold leading-tight sm:text-base">
+                        {selectedLead.name}
+                      </CardTitle>
+
+                      <span className="shrink-0 whitespace-nowrap border rounded-md bg-muted px-1.5 py-0.5 font-mono text-3xs text-muted-foreground sm:px-2 sm:text-xs">
                         {selectedLead.leadCode}
                       </span>
+
                       {selectedLead.currentDepartment === "claimed" ? (
-                        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md font-mono">
-                          Claimed & Closed
+                        <span className="shrink-0 whitespace-nowrap rounded-md bg-emerald-500/10 px-2 py-0.5 font-mono text-3xs font-semibold text-emerald-600 dark:text-emerald-400 sm:text-2xs">
+                          Claimed &amp; Closed
                         </span>
                       ) : (
-                        <span className="text-[11px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2.5 py-0.5 rounded-md font-mono">
+                        <span className="shrink-0 whitespace-nowrap border border-border rounded-md bg-purple-500/10 px-1 py-0.5 font-mono text-3xs font-medium text-purple-600 dark:text-purple-400 sm:text-2xs">
                           Awaiting Claim
                         </span>
                       )}
                     </div>
-                    <CardDescription className="text-[13px] mt-0.5">
+
+                    <CardDescription className="mt-2 break-words text-xs leading-snug sm:text-ui-sm italic">
                       Listen to the compliance verification voice recording before closing this account
                     </CardDescription>
                   </div>
-                  <Link href={`/leads/${selectedLead.id}`}>
-                    <Button variant="ghost" size="sm" className="h-8 text-[13px]">
+
+                  {/* Right: action — full width on mobile, auto on sm+ */}
+                  <Link
+                    href={`/leads/${selectedLead.id}`}
+                    className="shrink-0 sm:self-start"
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 w-full text-ui-sm sm:h-8 sm:w-auto"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
                       History
                     </Button>
                   </Link>
                 </CardHeader>
 
-                <CardContent className="p-5 space-y-5">
+                <CardContent className="p-2.5 sm:p-5 space-y-5">
                   {/* Lead Information */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-ui-sm">
                     <div className="p-3.5 rounded-xl border border-border bg-card space-y-1">
-                      <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider">Prospect:</span>
-                      <p className="font-semibold text-foreground text-[14px]">{selectedLead.name}</p>
-                      <p className="font-mono text-muted-foreground text-[12.5px]">{selectedLead.contactNumber}</p>
+                      <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider">Prospect:</span>
+                      <p className="font-semibold text-foreground text-sm">{selectedLead.name}</p>
+                      <p className="font-mono text-muted-foreground text-xs">{selectedLead.contactNumber}</p>
                     </div>
 
                     <div className="p-3.5 rounded-xl border border-border bg-card space-y-1">
-                      <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider">Meeting Slot:</span>
-                      <p className="font-semibold text-foreground text-[14px]">
+                      <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider">Meeting Slot:</span>
+                      <p className="font-semibold text-foreground text-sm">
                         {selectedLead.date} at {selectedLead.time}
                       </p>
-                      <p className="text-muted-foreground text-[13px] truncate">{selectedLead.remark}</p>
+                      <p className="text-muted-foreground text-ui-sm truncate">{selectedLead.remark}</p>
                     </div>
 
                     <div className="sm:col-span-2 p-3.5 rounded-xl border border-border bg-card space-y-1">
-                      <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider">Verified Address:</span>
-                      <p className="text-foreground text-[13px]">
+                      <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider">Verified Address:</span>
+                      <p className="text-foreground text-ui-sm">
                         {selectedLead.postalAddress}, {selectedLead.city}, {selectedLead.state} {selectedLead.pincode && `- ${selectedLead.pincode}`}
                       </p>
                     </div>
@@ -226,8 +244,8 @@ export default function SalesPage() {
 
                   {/* MANDATORY AUDIO PLAYER SECTION */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-[14px] font-semibold text-foreground flex items-center gap-2">
+                    <div className="flex items-center justify-between mt-8">
+                      <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
                         {isAudioCompleted ? (
                           <Unlock className="w-4 h-4 text-emerald-500" />
                         ) : (
@@ -235,7 +253,7 @@ export default function SalesPage() {
                         )}
                         Compliance Voice Verification Recording
                       </Label>
-                      <span className="text-[11px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                      <span className="hidden sm:block text-2xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
                         Audio Gating
                       </span>
                     </div>
@@ -270,36 +288,36 @@ export default function SalesPage() {
                           <Award className="w-4.5 h-4.5" />
                         </div>
                         <div>
-                          <h4 className="text-[14px] font-semibold text-foreground">Lead Successfully Claimed & Closed</h4>
-                          <p className="text-[12.5px] text-muted-foreground">
+                          <h4 className="text-sm font-semibold text-foreground">Lead Successfully Claimed & Closed</h4>
+                          <p className="text-xs text-muted-foreground">
                             Enterprise deal onboarding initiated by sales team.
                           </p>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-card/90 rounded-xl border border-border/80 shadow-neu-inset-sm p-3.5 text-[13px] font-mono">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-card/90 rounded-xl border border-border/80 shadow-neu-inset-sm p-3.5 text-ui-sm font-mono">
                         <div>
-                          <span className="text-muted-foreground block text-[11px]">Claimed By:</span>
-                          <span className="font-semibold text-foreground text-[13px]">
+                          <span className="text-muted-foreground block text-2xs">Claimed By:</span>
+                          <span className="font-semibold text-foreground text-ui-sm">
                             {selectedLead.salesDetails?.claimedBy || user?.name}
                           </span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground block text-[11px]">Claimed At:</span>
-                          <span className="text-foreground text-[13px]">
+                          <span className="text-muted-foreground block text-2xs">Claimed At:</span>
+                          <span className="text-foreground text-ui-sm">
                             {formatDateTime(selectedLead.salesDetails?.claimedAt || selectedLead.updatedAt)}
                           </span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground block text-[11px]">Deal Value:</span>
-                          <span className="font-semibold text-emerald-600 dark:text-emerald-400 text-[13px] tabular-nums">
+                          <span className="text-muted-foreground block text-2xs">Deal Value:</span>
+                          <span className="font-semibold text-emerald-600 dark:text-emerald-400 text-ui-sm tabular-nums">
                             ₹{(selectedLead.salesDetails?.dealValue || 450000).toLocaleString("en-IN")}
                           </span>
                         </div>
                       </div>
 
                       {selectedLead.salesDetails?.closingRemarks && (
-                        <p className="text-[13px] text-muted-foreground italic">
+                        <p className="text-ui-sm text-muted-foreground italic">
                           "{selectedLead.salesDetails.closingRemarks}"
                         </p>
                       )}
@@ -308,7 +326,7 @@ export default function SalesPage() {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-3 border-t border-border">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <Label htmlFor="dealValue" className="text-[14px]">Estimated Deal Value (₹)</Label>
+                          <Label htmlFor="dealValue" className="text-sm">Estimated Deal Value (₹)</Label>
                           <Input
                             id="dealValue"
                             type="number"
@@ -320,7 +338,7 @@ export default function SalesPage() {
                         </div>
 
                         <div className="space-y-1.5">
-                          <Label htmlFor="closingRemarks" className="text-[14px]">Closing Remarks</Label>
+                          <Label htmlFor="closingRemarks" className="text-sm">Closing Remarks</Label>
                           <Input
                             id="closingRemarks"
                             placeholder="e.g. Contract approved."
@@ -333,12 +351,12 @@ export default function SalesPage() {
 
                       <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
                         {!isAudioCompleted ? (
-                          <p className="text-[13px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1.5">
+                          <p className="text-ui-sm text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1.5">
                             <Lock className="w-4 h-4 shrink-0" />
                             Claim button is locked until voice recording finishes playing.
                           </p>
                         ) : (
-                          <p className="text-[13px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5">
+                          <p className="text-ui-sm text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5">
                             <CheckCircle2 className="w-4 h-4 shrink-0" />
                             Audio review finished. You are authorized to claim this lead.
                           </p>
@@ -360,7 +378,7 @@ export default function SalesPage() {
 
                   {/* Audit History */}
                   <div className="pt-4 border-t border-border/70">
-                    <h4 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider font-mono mb-3">
+                    <h4 className="text-ui-sm font-semibold text-muted-foreground uppercase tracking-wider font-mono mb-3">
                       Lifecycle History
                     </h4>
                     <WorkflowTimeline history={selectedLead.workflowHistory} />

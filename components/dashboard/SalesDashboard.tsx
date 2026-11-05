@@ -117,16 +117,16 @@ export function SalesDashboard() {
               <Unlock className="w-4.5 h-4.5" />
             </div>
             <div>
-              <p className="text-[14px] font-semibold text-foreground">
+              <p className="text-sm font-semibold text-foreground">
                 {audioCompleted.length} Leads Audio-Verified & Ready to Claim
               </p>
-              <p className="text-[13px] text-muted-foreground">
+              <p className="text-ui-sm text-muted-foreground">
                 Audio playback completed. You are authorized to claim these accounts and enter contract values.
               </p>
             </div>
           </div>
           <Link href="/sales">
-            <Button size="sm" variant="success" className="text-[13px] h-8 px-3">
+            <Button size="sm" variant="success" className="text-ui-sm h-8 px-3">
               Claim Leads Now
             </Button>
           </Link>
@@ -138,16 +138,16 @@ export function SalesDashboard() {
               <Lock className="w-4.5 h-4.5" />
             </div>
             <div>
-              <p className="text-[14px] font-semibold text-foreground">
+              <p className="text-sm font-semibold text-foreground">
                 {audioPending.length} Leads Locked by Audio Compliance Gate
               </p>
-              <p className="text-[13px] text-muted-foreground">
+              <p className="text-ui-sm text-muted-foreground">
                 You must listen to the complete voice recording before the Claim button unlocks.
               </p>
             </div>
           </div>
           <Link href="/sales">
-            <Button size="sm" variant="outline" className="text-[13px] h-8 px-3">
+            <Button size="sm" variant="outline" className="text-ui-sm h-8 px-3">
               Listen to Audio
             </Button>
           </Link>
@@ -164,14 +164,14 @@ export function SalesDashboard() {
             noPadding
             action={
               <Link href="/sales">
-                <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />} className="h-8 text-[13px]">
+                <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />} className="h-8 text-ui-sm">
                   View Queue
                 </Button>
               </Link>
             }
           >
             {salesLeads.length === 0 ? (
-              <div className="p-8 text-center text-[13.5px] text-muted-foreground flex flex-col items-center justify-center gap-2">
+              <div className="p-8 text-center text-ui-sm text-muted-foreground flex flex-col items-center justify-center gap-2">
                 <div className="h-10 w-10 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground">
                   <TrendingUp className="w-5 h-5" />
                 </div>
@@ -181,7 +181,7 @@ export function SalesDashboard() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-border bg-muted/30 text-muted-foreground font-mono text-[12px] uppercase tracking-wider">
+                    <tr className="border-b border-border bg-muted/30 text-muted-foreground font-mono text-xs uppercase tracking-wider">
                       <th className="py-3 px-5 font-semibold">Lead Prospect</th>
                       <th className="py-3 px-5 font-semibold">Contact</th>
                       <th className="py-3 px-5 font-semibold">Audio Gate</th>
@@ -196,29 +196,29 @@ export function SalesDashboard() {
                         <tr key={lead.id} className="hover:bg-muted/30 transition-colors">
                           <td className="py-3.5 px-5">
                             <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold font-mono text-[12px] shrink-0 border border-primary/20">
+                              <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold font-mono text-xs shrink-0 border border-primary/20">
                                 {getInitials(lead.name)}
                               </div>
                               <div className="min-w-0">
                                 <Link
                                   href={`/leads/${lead.id}`}
-                                  className="font-semibold text-foreground hover:text-primary transition-colors truncate block text-[14px]"
+                                  className="font-semibold text-foreground hover:text-primary transition-colors truncate block text-sm"
                                 >
                                   {lead.name}
                                 </Link>
-                                <span className="text-[12px] font-mono text-muted-foreground">
+                                <span className="text-xs font-mono text-muted-foreground">
                                   {lead.leadCode}
                                 </span>
                               </div>
                             </div>
                           </td>
-                          <td className="py-3.5 px-5 font-mono text-foreground/80 text-[13px]">
+                          <td className="py-3.5 px-5 font-mono text-foreground/80 text-ui-sm">
                             {lead.contactNumber}
                           </td>
                           <td className="py-3.5 px-5">
                             <span
                               className={cn(
-                                "inline-flex items-center gap-1 font-mono text-[11px] px-2.5 py-0.5 rounded-md font-semibold border",
+                                "inline-flex items-center gap-1 font-mono text-2xs px-2.5 py-0.5 rounded-md font-semibold border",
                                 isAudioDone
                                   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                                   : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
@@ -245,7 +245,7 @@ export function SalesDashboard() {
                               <Button
                                 size="sm"
                                 variant={isAudioDone ? "success" : "outline"}
-                                className="h-8 text-[13px] px-3"
+                                className="h-8 text-ui-sm px-3"
                               >
                                 {isAudioDone ? "Claim Deal" : "Listen Audio"}
                               </Button>
@@ -269,7 +269,7 @@ export function SalesDashboard() {
             noPadding
           >
             {myClaimed.length === 0 ? (
-              <div className="p-6 text-center text-[13px] text-muted-foreground">
+              <div className="p-6 text-center text-ui-sm text-muted-foreground">
                 No claimed deals yet. Finish audio review to claim leads.
               </div>
             ) : (
@@ -277,14 +277,14 @@ export function SalesDashboard() {
                 {myClaimed.slice(0, 5).map((lead) => (
                   <div key={lead.id} className="p-4 hover:bg-muted/30 transition-colors">
                     <div className="flex items-center justify-between gap-2">
-                      <Link href={`/leads/${lead.id}`} className="font-semibold text-foreground hover:text-primary transition-colors text-[13.5px] truncate">
+                      <Link href={`/leads/${lead.id}`} className="font-semibold text-foreground hover:text-primary transition-colors text-ui-sm truncate">
                         {lead.name}
                       </Link>
-                      <span className="font-mono text-[12px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                      <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
                         ₹{(lead.salesDetails?.dealValue || 350000).toLocaleString("en-IN")}
                       </span>
                     </div>
-                    <div className="mt-1 flex items-center justify-between text-[12px] font-mono text-muted-foreground">
+                    <div className="mt-1 flex items-center justify-between text-xs font-mono text-muted-foreground">
                       <span>{lead.leadCode}</span>
                       <span>{formatDateTime(lead.salesDetails?.claimedAt || lead.updatedAt)}</span>
                     </div>

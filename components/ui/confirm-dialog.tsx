@@ -40,7 +40,7 @@ export function ConfirmDialog({
                 <AlertCircle className="w-5 h-5" />
               </div>
             )}
-            <h3 className="text-[15px] font-semibold text-foreground tracking-tight">{title}</h3>
+            <h3 className="text-base font-semibold text-foreground tracking-tight">{title}</h3>
           </div>
           <button
             onClick={onClose}

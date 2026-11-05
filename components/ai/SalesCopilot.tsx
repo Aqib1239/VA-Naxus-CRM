@@ -79,18 +79,18 @@ export function SalesCopilot({ leadId, className }: SalesCopilotProps) {
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">Sales Copilot</h3>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground italic">
               Personalized talking points, objection handling & call scripts
             </p>
           </div>
         </div>
-        <AiBadge />
+        <AiBadge className="hidden sm:flex" />
       </div>
 
       {/* Mandatory Human Gate Reminder */}
       <div className="flex items-start gap-2 rounded-xl border border-amber-300/60 bg-amber-50/70 p-2.5 text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300 text-xs">
         <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
-        <span className="text-[11px] leading-tight">
+        <span className="text-2xs leading-tight">
           <strong>Human Review Mandatory:</strong> AI drafts must be verified by the assigned Sales
           Executive before communicating with prospects or modifying deal parameters.
         </span>
@@ -108,7 +108,8 @@ export function SalesCopilot({ leadId, className }: SalesCopilotProps) {
           <button
             type="button"
             onClick={generate}
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-neu-btn hover:bg-emerald-700 active:shadow-neu-inset transition-all"
+            aria-label="Generate Sales Copilot insights"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-neu-btn hover:opacity-90 active:shadow-neu-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
           >
             <Sparkles className="h-3.5 w-3.5" />
             Generate Sales Copilot
@@ -119,7 +120,7 @@ export function SalesCopilot({ leadId, className }: SalesCopilotProps) {
       {/* Loading */}
       {loading && (
         <div className="flex flex-col items-center gap-3 py-8">
-          <div className="h-7 w-7 rounded-full border-2 border-emerald-500/20 border-t-emerald-600 animate-spin" />
+          <div className="h-7 w-7 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
           <p className="text-xs text-muted-foreground font-medium animate-pulse">
             Drafting personalized pitch, objection handling & script…
           </p>
@@ -128,10 +129,15 @@ export function SalesCopilot({ leadId, className }: SalesCopilotProps) {
 
       {/* Error */}
       {error && (
-        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-red-700 text-xs">
+        <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-destructive text-xs">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <span className="flex-1">{error}</span>
-          <button type="button" onClick={generate} className="font-semibold underline">
+          <button
+            type="button"
+            onClick={generate}
+            aria-label="Retry generating Sales Copilot"
+            className="font-semibold underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
             Retry
           </button>
         </div>
@@ -145,7 +151,8 @@ export function SalesCopilot({ leadId, className }: SalesCopilotProps) {
             <button
               type="button"
               onClick={() => setExpandedSection(expandedSection === "talkingPoints" ? null : "talkingPoints")}
-              className="flex items-center justify-between w-full px-4 py-2.5 bg-muted/30 hover:bg-muted/50 text-left text-xs font-semibold text-foreground transition-colors"
+              aria-label="Toggle Key Talking Points section"
+              className="flex items-center justify-between w-full px-4 py-2.5 bg-muted/30 hover:bg-muted/50 text-left text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
             >
               <span className="flex items-center gap-2">
                 <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
@@ -217,7 +224,7 @@ export function SalesCopilot({ leadId, className }: SalesCopilotProps) {
                     <p className="font-semibold text-amber-600 dark:text-amber-400">
                       Objection: &ldquo;{o.objection}&rdquo;
                     </p>
-                    <p className="text-foreground pl-3 border-l-2 border-emerald-500 text-[11px] leading-relaxed">
+                    <p className="text-foreground pl-3 border-l-2 border-emerald-500 text-2xs leading-relaxed">
                       {o.response}
                     </p>
                   </div>
@@ -235,7 +242,7 @@ export function SalesCopilot({ leadId, className }: SalesCopilotProps) {
               </span>
               <span
                 className={cn(
-                  "text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full",
+                  "text-3xs uppercase font-bold tracking-wider px-2 py-0.5 rounded-full",
                   isApproved
                     ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                     : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
@@ -262,11 +269,12 @@ export function SalesCopilot({ leadId, className }: SalesCopilotProps) {
                   setIsApproved(true);
                   toast.success("Draft approved for follow-up transmission");
                 }}
+                aria-label={isApproved ? "Draft already approved" : "Approve follow-up email draft"}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold shadow-neu-btn active:shadow-neu-inset transition-all",
+                  "inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold shadow-neu-btn active:shadow-neu-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all",
                   isApproved
-                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                    : "bg-emerald-600 text-white hover:bg-emerald-700"
+                    ? "bg-success/20 text-success border border-success/30 font-semibold"
+                    : "bg-primary text-primary-foreground hover:opacity-90"
                 )}
               >
                 <Check className="h-3.5 w-3.5" />
@@ -276,21 +284,23 @@ export function SalesCopilot({ leadId, className }: SalesCopilotProps) {
               <button
                 type="button"
                 onClick={handleCopyDraft}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-border/70 bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground shadow-neu-raised-sm hover:shadow-neu-btn-hover active:shadow-neu-inset transition-all"
+                aria-label="Copy draft email to clipboard"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-border/70 bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground shadow-neu-raised-sm hover:shadow-neu-btn-hover active:shadow-neu-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
               >
-                {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
                 {copied ? "Copied" : "Copy to Clipboard"}
               </button>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-1 border-t border-border/50 text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-between pt-1 border-t border-border/50 text-3xs text-muted-foreground">
             <span>{result.disclaimer}</span>
             <button
               type="button"
               onClick={generate}
-              className="inline-flex items-center gap-1 text-primary hover:underline"
+              aria-label="Regenerate sales copilot insights"
+              className="inline-flex items-center gap-1 text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
             >
               <RefreshCw className="h-3 w-3" /> Regenerate
             </button>

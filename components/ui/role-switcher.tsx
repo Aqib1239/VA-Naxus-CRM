@@ -21,7 +21,7 @@ export function RoleSwitcher({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-2.5 h-9 px-3 rounded-xl border border-border/80 bg-card shadow-neu-btn text-[13px] font-medium text-foreground",
+        "flex items-center gap-2.5 h-9 px-3 rounded-xl border border-border/80 bg-card shadow-neu-btn text-ui-sm font-medium text-foreground",
         className
       )}
     >
@@ -29,10 +29,10 @@ export function RoleSwitcher({ className }: { className?: string }) {
         <Shield className="w-3.5 h-3.5" />
       </div>
       <div className="flex flex-col items-start text-left">
-        <span className="text-[9.5px] text-muted-foreground uppercase tracking-wider font-mono leading-none">
+        <span className="text-3xs text-muted-foreground uppercase tracking-wider font-mono leading-none">
           Role
         </span>
-        <span className="font-semibold text-foreground text-[12px] leading-tight">
+        <span className="font-semibold text-foreground text-xs leading-tight">
           {activeConfig.badgeLabel}
         </span>
       </div>

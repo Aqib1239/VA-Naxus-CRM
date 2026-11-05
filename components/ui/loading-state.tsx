@@ -51,23 +51,23 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = "Something went wrong",
-  message = "Failed to load CRM data. Please check your connection and retry.",
+  title = "Unable to load record",
+  message = "The requested CRM record or dataset could not be retrieved. Check your network connection or verify authorization.",
   onRetry,
   className,
 }: ErrorStateProps) {
   return (
     <div
       className={cn(
-        "flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-rose-300/60 dark:border-rose-900/40 bg-rose-500/5 shadow-neu-raised p-8 text-center",
+        "flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-destructive/30 bg-destructive/5 shadow-neu-raised p-8 text-center",
         className
       )}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card border border-rose-300/40 text-rose-600 dark:text-rose-400 mb-3.5 shadow-neu-btn">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card border border-destructive/30 text-destructive mb-3.5 shadow-neu-btn">
         <AlertTriangle className="h-6 w-6" />
       </div>
-      <h3 className="text-[15px] font-semibold text-foreground tracking-tight">{title}</h3>
-      <p className="mt-1 max-w-sm text-[13px] text-muted-foreground leading-relaxed">
+      <h3 className="text-base font-semibold text-foreground tracking-tight">{title}</h3>
+      <p className="mt-1 max-w-sm text-ui-sm text-muted-foreground leading-relaxed">
         {message}
       </p>
       {onRetry && (
@@ -75,10 +75,11 @@ export function ErrorState({
           size="sm"
           variant="outline"
           onClick={onRetry}
+          aria-label="Retry loading CRM data"
           leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
-          className="mt-4"
+          className="mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          Retry
+          Retry Request
         </Button>
       )}
     </div>

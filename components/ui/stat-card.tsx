@@ -35,23 +35,23 @@ export function StatCard({
       )}
     >
       <div className="flex items-center justify-between">
-        <span className="text-[13.5px] font-medium text-muted-foreground">{label}</span>
+        <span className="text-ui-sm font-medium text-muted-foreground">{label}</span>
         <div className="h-9 w-9 rounded-xl bg-muted/60 dark:bg-muted/40 shadow-neu-inset-sm flex items-center justify-center text-muted-foreground shrink-0 border border-border/60">
           {icon}
         </div>
       </div>
 
       <div className="mt-3.5">
-        <div className="text-2xl sm:text-[30px] lg:text-[32px] font-semibold tracking-tight text-foreground font-mono tabular-nums leading-none">
+        <div className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground font-mono tabular-nums leading-none">
           {value}
         </div>
 
         {(trend || description) && (
-          <div className="mt-3 flex items-center gap-2 text-[12.5px]">
+          <div className="mt-3 flex items-center gap-2 text-xs">
             {trend && (
               <span
                 className={cn(
-                  "inline-flex items-center gap-0.5 font-medium font-mono text-[11px] px-1.5 py-0.5 rounded-md",
+                  "inline-flex items-center gap-0.5 font-medium font-mono text-2xs px-1.5 py-0.5 rounded-md",
                   trend.isPositive !== false
                     ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                     : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
@@ -66,7 +66,7 @@ export function StatCard({
               </span>
             )}
             {description && (
-              <span className="text-muted-foreground text-[12.5px] truncate">
+              <span className="text-muted-foreground text-xs truncate">
                 {description}
               </span>
             )}

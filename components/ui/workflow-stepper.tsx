@@ -66,7 +66,7 @@ export function WorkflowStepper({ currentDepartment, className }: WorkflowSteppe
               </div>
               <span
                 className={cn(
-                  "mt-2 text-[13px] tracking-tight whitespace-nowrap",
+                  "mt-2 text-ui-sm tracking-tight whitespace-nowrap",
                   isCompleted && "text-foreground font-semibold",
                   isCurrent && "text-primary font-bold",
                   isPending && "text-muted-foreground/70 font-normal"

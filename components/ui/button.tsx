@@ -26,7 +26,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium transition-all duration-150 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none active:translate-y-0 select-none text-[14px]";
+      "inline-flex items-center justify-center font-medium transition-all duration-150 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none active:translate-y-0 select-none text-sm";
 
     const variants = {
       primary:
@@ -40,13 +40,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       destructive:
         "bg-destructive text-destructive-foreground shadow-[3px_3px_8px_rgba(239,68,68,0.3),-2px_-2px_6px_rgba(255,255,255,0.8)] dark:shadow-[3px_3px_8px_rgba(0,0,0,0.5)] hover:brightness-105 active:shadow-[inset_2px_2px_4px_rgba(0,0,0,0.25)] border border-transparent font-semibold",
       success:
-        "bg-emerald-600 dark:bg-emerald-500 text-white shadow-[3px_3px_8px_rgba(16,185,129,0.3),-2px_-2px_6px_rgba(255,255,255,0.8)] dark:shadow-[3px_3px_8px_rgba(0,0,0,0.5)] hover:brightness-105 active:shadow-[inset_2px_2px_4px_rgba(0,0,0,0.25)] border border-transparent font-semibold",
+        "bg-success text-success-foreground shadow-[3px_3px_8px_rgba(16,185,129,0.3),-2px_-2px_6px_rgba(255,255,255,0.8)] dark:shadow-[3px_3px_8px_rgba(0,0,0,0.5)] hover:brightness-105 active:shadow-[inset_2px_2px_4px_rgba(0,0,0,0.25)] border border-transparent font-semibold",
     };
 
     const sizes = {
-      sm: "h-8 px-3 text-[13px] gap-1.5 rounded-lg",
-      md: "h-10 px-4 text-[14px] gap-2 rounded-xl",
-      lg: "h-11 px-5 text-[15px] gap-2.5 font-semibold rounded-xl",
+      sm: "h-8 px-3 text-ui-sm gap-1.5 rounded-lg",
+      md: "h-10 px-4 text-sm gap-2 rounded-xl",
+      lg: "h-11 px-5 text-base gap-2.5 font-semibold rounded-xl",
       icon: "h-9 w-9 p-0 rounded-xl",
     };
 

@@ -136,7 +136,7 @@ export function MarketingDashboard() {
             description="Add high-priority prospect to queue"
           >
             <div className="space-y-4">
-              <p className="text-[13px] text-muted-foreground leading-relaxed">
+              <p className="text-ui-sm text-muted-foreground leading-relaxed">
                 Directly register inbound inquiries with contact details to initiate automated CRM workflow.
               </p>
               <Link href="/marketing" className="block">
@@ -154,14 +154,14 @@ export function MarketingDashboard() {
           >
             <div className="space-y-3">
               {recentDispatched.map((lead) => (
-                <div key={lead.id} className="flex items-center justify-between gap-2 text-[13px]">
+                <div key={lead.id} className="flex items-center justify-between gap-2 text-ui-sm">
                   <div className="min-w-0">
                     <Link href={`/leads/${lead.id}`} className="font-medium text-foreground hover:text-primary transition-colors truncate block">
                       {lead.name}
                     </Link>
-                    <span className="font-mono text-[11px] text-muted-foreground">{lead.leadCode}</span>
+                    <span className="font-mono text-2xs text-muted-foreground">{lead.leadCode}</span>
                   </div>
-                  <span className="shrink-0 text-[11px] font-mono px-2 py-0.5 rounded-md border border-border bg-muted/60 capitalize font-medium">
+                  <span className="shrink-0 text-2xs font-mono px-2 py-0.5 rounded-md border border-border bg-muted/60 capitalize font-medium">
                     {lead.currentDepartment}
                   </span>
                 </div>

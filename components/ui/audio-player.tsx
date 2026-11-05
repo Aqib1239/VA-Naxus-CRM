@@ -701,7 +701,7 @@ export function AudioPlayer({
     []
   );
 
-  const accentFill = isEndedNaturally ? "bg-emerald-500" : "bg-primary";
+  const accentFill = isEndedNaturally ? "bg-success" : "bg-primary";
 
   const renderBars = (colorClass: string) => (
     <div className="flex h-full w-full items-center gap-[2px]">
@@ -731,7 +731,7 @@ export function AudioPlayer({
     <div
       className={cn(
         "w-full rounded-2xl border bg-card p-2 shadow-neu-raised transition-all duration-300",
-        isEndedNaturally ? "border-emerald-500/40 bg-emerald-500/5 shadow-[0_4px_16px_rgba(16,185,129,0.12)]" : "border-border/80",
+        isEndedNaturally ? "border-success/40 bg-success/5 shadow-[0_4px_16px_rgba(16,185,129,0.12)]" : "border-border/80",
         className
       )}
     >
@@ -771,18 +771,18 @@ export function AudioPlayer({
             )}
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="truncate text-[14px] font-semibold text-foreground tracking-tight">
+            <div className="flex items-center gap-1 flex-wrap">
+              <h4 className="truncate text-sm font-semibold text-foreground tracking-tight">
                 {displayTitle}
               </h4>
               {displayId && (
-                <span className="inline-flex items-center rounded-md border border-border/70 bg-muted/70 px-1.5 py-0.5 font-mono text-[11px] font-medium text-muted-foreground shadow-2xs">
+                <span className="inline-flex items-center rounded-md border border-border bg-muted/70 px-1.5 py-0.5 font-mono text-2xs font-medium text-muted-foreground shadow-2xs">
                   {displayId}
                 </span>
               )}
             </div>
-            <p className="text-[12px] text-muted-foreground tabular-nums flex items-center gap-1.5 flex-wrap">
-              <span>{effectiveSupportingText}</span>
+            <p className="text-xs text-muted-foreground tabular-nums flex items-center gap-1.5 flex-wrap mt-1">
+              <span className="hidden sm:inline">{effectiveSupportingText}</span>
               <span className="opacity-40">•</span>
               <span className="font-mono">{formatSeconds(duration)}</span>
               {fileSize && (
@@ -792,7 +792,7 @@ export function AudioPlayer({
                 </>
               )}
               {isUsingFallback && (
-                <span className="ml-1 inline-flex items-center gap-1 text-[11px] text-primary/80 font-normal">
+                <span className="ml-1 inline-flex items-center gap-1 text-2xs text-primary/80 font-normal">
                   <Radio className="h-2.5 w-2.5 animate-pulse text-emerald-500" />
                   Local Demo Audio
                 </span>
@@ -804,18 +804,18 @@ export function AudioPlayer({
         {/* Status pill */}
         <div className="shrink-0">
           {hasError ? (
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-[11px] font-medium text-destructive shadow-2xs">
+            <span className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-2xs font-medium text-destructive shadow-2xs">
               <AlertCircle className="h-3 w-3" />
               Unavailable
             </span>
           ) : protectionStatus === "protected" ? (
             isEndedNaturally ? (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-2xs font-medium text-emerald-600 dark:text-emerald-400 shadow-2xs">
                 <CheckCircle2 className="h-3 w-3" />
                 Protected • Verified
               </span>
             ) : isPlaying ? (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-primary/25 bg-primary/10 px-2.5 py-1 text-2xs font-medium text-primary shadow-2xs">
                 <span className="flex h-3 items-end gap-[2px]" aria-hidden>
                   {[0, 150, 300].map((delay) => (
                     <span
@@ -828,19 +828,19 @@ export function AudioPlayer({
                 Protected • Playing
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-lg border border-border/80 bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-2xs">
+              <span className="inline-flex items-center gap-1 rounded-lg border border-border/80 bg-muted/60 px-2.5 py-1 text-2xs font-medium text-muted-foreground shadow-2xs">
                 <ShieldCheck className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                 Protected
               </span>
             )
           ) : protectionStatus === "private" ? (
             isEndedNaturally ? (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-2xs font-medium text-indigo-600 dark:text-indigo-400 shadow-2xs">
                 <CheckCircle2 className="h-3 w-3 text-indigo-500" />
                 Private • Verified
               </span>
             ) : isPlaying ? (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-[11px] font-medium text-indigo-600 dark:text-indigo-400 shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-2xs font-medium text-indigo-600 dark:text-indigo-400 shadow-2xs">
                 <span className="flex h-3 items-end gap-[2px]" aria-hidden>
                   {[0, 150, 300].map((delay) => (
                     <span
@@ -853,19 +853,19 @@ export function AudioPlayer({
                 Private • Playing
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-[11px] font-medium text-indigo-700 dark:text-indigo-300 shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-2xs font-medium text-indigo-700 dark:text-indigo-300 shadow-2xs">
                 <Lock className="h-3 w-3 text-indigo-500" />
                 Private • Verification Required
               </span>
             )
           ) : protectionStatus === "legacy-public" ? (
             isEndedNaturally ? (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-2xs font-medium text-amber-600 dark:text-amber-400 shadow-2xs">
                 <CheckCircle2 className="h-3 w-3 text-amber-500" />
                 Legacy Public • Verified
               </span>
             ) : isPlaying ? (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-2xs font-medium text-amber-600 dark:text-amber-400 shadow-2xs">
                 <span className="flex h-3 items-end gap-[2px]" aria-hidden>
                   {[0, 150, 300].map((delay) => (
                     <span
@@ -878,24 +878,24 @@ export function AudioPlayer({
                 Legacy Public • Playing
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300 shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-2xs font-medium text-amber-700 dark:text-amber-300 shadow-2xs">
                 <AlertCircle className="h-3 w-3 text-amber-500" />
                 Legacy Public
               </span>
             )
           ) : (
             isEndedNaturally ? (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-muted/60 px-2.5 py-1 text-2xs font-medium text-muted-foreground shadow-2xs">
                 <CheckCircle2 className="h-3 w-3 text-muted-foreground" />
                 Storage Unverified • Verified
               </span>
             ) : isPlaying ? (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-foreground shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground shadow-2xs">
                 <Radio className="h-3 w-3 animate-pulse text-muted-foreground" />
                 Storage Unverified • Playing
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-muted/60 px-2.5 py-1 text-2xs font-medium text-muted-foreground shadow-2xs">
                 <FileAudio className="h-3 w-3 text-muted-foreground" />
                 Storage Unverified
               </span>
@@ -908,13 +908,13 @@ export function AudioPlayer({
       {hasError && errorMessage && (
         <div
           role="alert"
-          className="mt-3 flex items-start justify-between gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-[12.5px] text-destructive shadow-2xs"
+          className="mt-3 flex items-start justify-between gap-2 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs text-destructive shadow-2xs"
         >
           <div className="flex items-start gap-2 min-w-0">
             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <div className="min-w-0">
               <span className="font-medium">{errorMessage}</span>
-              <span className="mt-0.5 block truncate font-mono text-[11px] opacity-70">
+              <span className="mt-0.5 block truncate font-mono text-2xs opacity-70">
                 VA Nexus Protected Recording {displayId ? `• ${displayId}` : ""}
               </span>
             </div>
@@ -922,7 +922,7 @@ export function AudioPlayer({
           <button
             type="button"
             onClick={handleRetry}
-            className="shrink-0 text-[11px] font-semibold underline hover:no-underline text-destructive hover:opacity-80 px-1 py-0.5"
+            className="shrink-0 text-2xs font-semibold underline hover:no-underline text-destructive hover:opacity-80 px-1 py-0.5"
           >
             Retry
           </button>
@@ -961,7 +961,7 @@ export function AudioPlayer({
               <div
                 className={cn(
                   "pointer-events-none absolute -top-1 -bottom-1 w-[3px] -translate-x-1/2 rounded-full shadow-sm transition-opacity duration-200",
-                  isEndedNaturally ? "bg-emerald-500" : "bg-primary",
+                  isEndedNaturally ? "bg-success" : "bg-primary",
                   dragging
                     ? "opacity-100"
                     : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
@@ -972,7 +972,7 @@ export function AudioPlayer({
           )}
         </Slider>
 
-        <div className="mt-2 flex items-center justify-between px-1 text-[13px] tabular-nums font-mono text-muted-foreground">
+        <div className="mt-2 flex items-center justify-between px-1 text-ui-sm tabular-nums font-mono text-muted-foreground">
           <span>{formatSeconds(displayTime)}</span>
           <span>-{formatSeconds(remainingTime)}</span>
         </div>
@@ -988,7 +988,7 @@ export function AudioPlayer({
             disabled={hasError}
             title="Restart"
             aria-label="Restart audio from the beginning"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground border border-border/70 bg-card shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset transition-all duration-200 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground border border-border/70 bg-card shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all duration-200 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
           >
             <RotateCcw className="h-4 w-4" />
           </button>
@@ -999,10 +999,10 @@ export function AudioPlayer({
             disabled={hasError}
             title={`Back ${SKIP_SECONDS} seconds`}
             aria-label={`Skip back ${SKIP_SECONDS} seconds`}
-            className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground border border-border/70 bg-card shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset transition-all duration-200 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground border border-border/70 bg-card shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all duration-200 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
           >
             <RotateCcw className="h-[18px] w-[18px] -scale-x-100 rotate-180 opacity-0" aria-hidden />
-            <span className="absolute text-[11px] font-semibold font-mono tabular-nums">-{SKIP_SECONDS}</span>
+            <span className="absolute text-2xs font-semibold font-mono tabular-nums">-{SKIP_SECONDS}</span>
           </button>
 
           <button
@@ -1015,7 +1015,7 @@ export function AudioPlayer({
               "hover:scale-105 active:scale-95 disabled:pointer-events-none disabled:opacity-50",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               isEndedNaturally && !isPlaying
-                ? "bg-emerald-500 text-white shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset"
+                ? "bg-success text-success-foreground shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset"
                 : "bg-primary text-primary-foreground shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset shadow-primary/30",
               isPlaying && "shadow-neu-inset"
             )}
@@ -1050,20 +1050,20 @@ export function AudioPlayer({
             disabled={hasError}
             title={`Forward ${SKIP_SECONDS} seconds`}
             aria-label={`Skip forward ${SKIP_SECONDS} seconds`}
-            className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground border border-border/70 bg-card shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset transition-all duration-200 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground border border-border/70 bg-card shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all duration-200 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
           >
             <RotateCw className="h-[18px] w-[18px] opacity-0" aria-hidden />
-            <span className="absolute text-[11px] font-semibold font-mono tabular-nums">+{SKIP_SECONDS}</span>
+            <span className="absolute text-2xs font-semibold font-mono tabular-nums">+{SKIP_SECONDS}</span>
           </button>
         </div>
 
         {/* Volume */}
-        <div className="flex items-center bg-green-200 border border-slate-300 dark:border-slate-700 shadow-neu-inset-sm rounded-full py-1.5 px-2 sm:py-2 sm:px-3 gap-1.5">
+        <div className="flex items-center bg-card border border-border/80 shadow-neu-inset-sm rounded-full py-1.5 px-2 sm:py-2 sm:px-3 gap-1.5">
           <button
             type="button"
             onClick={toggleMute}
             aria-label={effectiveVolume === 0 ? "Unmute audio" : "Mute audio"}
-            className="flex h-6 w-6 sm:h-9 sm:w-9 items-center justify-center rounded-full text-muted-foreground border border-slate-400 dark:border-slate-800 bg-card shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset transition-all duration-200 hover:text-foreground"
+            className="flex h-6 w-6 sm:h-9 sm:w-9 items-center justify-center rounded-full text-muted-foreground border border-border/80 bg-card shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all duration-200 hover:text-foreground"
           >
             <VolumeIcon className="h-[18px] w-[18px]" />
           </button>
@@ -1082,7 +1082,7 @@ export function AudioPlayer({
                 {/* Floating percentage badge — auto-hides after 3s of inactivity */}
                 <div
                   className={cn(
-                    "pointer-events-none absolute -top-8 -translate-x-1/2 rounded-md bg-foreground text-background px-1.5 py-0.5 text-[12px] font-semibold font-mono tabular-nums shadow-md whitespace-nowrap",
+                    "pointer-events-none absolute -top-8 -translate-x-1/2 rounded-md bg-foreground text-background px-1.5 py-0.5 text-xs font-semibold font-mono tabular-nums shadow-md whitespace-nowrap",
                     "transition-opacity duration-200",
                     showTooltip || dragging ? "opacity-100" : "opacity-0"
                   )}
@@ -1103,7 +1103,7 @@ export function AudioPlayer({
                   />
                   <div
                     className={cn(
-                      "pointer-events-none absolute top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-green-100 bg-green-700 transition-transform duration-150",
+                      "pointer-events-none absolute top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-background bg-primary shadow-neu-raised transition-transform duration-150",
                       dragging ? "scale-110 shadow-neu-inset-sm" : "scale-100 group-hover:scale-105"
                     )}
                     style={{ left: `${percent}%` }}
@@ -1119,12 +1119,12 @@ export function AudioPlayer({
       {requiredForAction && (
         <div className="mt-4 border-t border-border/70 pt-3">
           {!isEndedNaturally ? (
-            <p className="flex items-center gap-2 text-[13px] font-medium text-amber-600 dark:text-amber-400">
+            <p className="flex items-center gap-2 text-ui-sm font-medium text-amber-600 dark:text-amber-400">
               <span className="inline-block h-2 w-2 shrink-0 animate-pulse rounded-full bg-amber-500" />
               Listen to the full recording to enable {requiredForAction}.
             </p>
           ) : (
-            <p className="flex items-center gap-2 text-[13px] font-medium text-emerald-600 dark:text-emerald-400">
+            <p className="flex items-center gap-2 text-ui-sm font-medium text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
               Recording verified. {requiredForAction} is unlocked.
             </p>

@@ -154,7 +154,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           ),
           thead: ({ node, ...props }) => (
             <thead
-              className="bg-muted/70 text-foreground text-[11px] font-bold border-b border-border/70"
+              className="bg-muted/70 text-foreground text-2xs font-bold border-b border-border/70"
               {...props}
             />
           ),
@@ -179,7 +179,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             return (
               <td
                 className={cn(
-                  "px-3.5 py-2 text-[11px] text-foreground/90 align-middle",
+                  "px-3.5 py-2 text-2xs text-foreground/90 align-middle",
                   isMissing && "text-amber-700 dark:text-amber-400 font-medium",
                   isVerified && "text-emerald-700 dark:text-emerald-400 font-medium",
                   isAwaiting && "text-blue-700 dark:text-blue-400 font-medium"
@@ -227,7 +227,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             if (inline) {
               return (
                 <code
-                  className="rounded bg-muted/80 px-1 py-0.5 font-mono text-[11px] text-primary font-semibold"
+                  className="rounded bg-muted/80 px-1 py-0.5 font-mono text-2xs text-primary font-semibold"
                   {...props}
                 >
                   {children}
@@ -235,7 +235,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
               );
             }
             return (
-              <div className="overflow-x-auto my-2 rounded-xl bg-muted/50 p-3 border border-border/70 font-mono text-[11px] text-foreground">
+              <div className="overflow-x-auto my-2 rounded-xl bg-muted/50 p-3 border border-border/70 font-mono text-2xs text-foreground">
                 <code {...props}>{children}</code>
               </div>
             );

@@ -228,7 +228,7 @@ export function AudioIntelligencePanel({
           clearInterval(interval);
           setError(jobStatus.failureReason || "Deepgram transcription failed.");
           toast.error("Audio Transcription Failed", {
-            description: jobStatus.failureReason || "An error occurred during audio processing.",
+            description: jobStatus.failureReason || "Audio processing failed. Check transcription worker and retry.",
           });
         }
       } catch (err: any) {
@@ -350,7 +350,7 @@ export function AudioIntelligencePanel({
     }
     audioRef.current.currentTime = seconds;
     setCurrentTime(seconds);
-    audioRef.current.play().catch(() => {});
+    audioRef.current.play().catch(() => { });
     setIsPlaying(true);
   };
 
@@ -365,7 +365,7 @@ export function AudioIntelligencePanel({
         requestAudioTicket(leadId);
         return;
       }
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play().catch(() => { });
       setIsPlaying(true);
     }
   };
@@ -422,7 +422,7 @@ export function AudioIntelligencePanel({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border/80 bg-card p-5 shadow-neu-raised dark:shadow-none space-y-4",
+        "rounded-2xl border border-border/80 bg-card p-2.5 sm:p-5 shadow-neu-raised dark:shadow-none space-y-4",
         className
       )}
     >
@@ -444,7 +444,7 @@ export function AudioIntelligencePanel({
             const restorePos = savedPlaybackPositionRef.current;
             audioRef.current.currentTime = restorePos;
             savedPlaybackPositionRef.current = null;
-            audioRef.current.play().catch(() => {});
+            audioRef.current.play().catch(() => { });
           }
         }}
         onError={handleAudioError}
@@ -454,7 +454,8 @@ export function AudioIntelligencePanel({
       />
 
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/60">
+      <div className="flex flex-wrap sm:flex-col gap-2 pb-3 border-b border-border">
+        <AiBadge label="Deepgram Nova 3.0" className="w-fit -mt-4" />
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-700 shadow-neu-raised-sm dark:bg-violet-950/50 dark:text-violet-300">
             <FileText className="h-4 w-4" />
@@ -462,9 +463,8 @@ export function AudioIntelligencePanel({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-foreground">Hinglish Speech & Audio Intelligence</h3>
-              <AiBadge label="Deepgram Nova-3" />
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="mt-1 text-3xs break-words sm:text-[12] text-muted-foreground italic">
               Verbatim multilingual transcription, diarization & interactive playback
             </p>
           </div>
@@ -473,25 +473,25 @@ export function AudioIntelligencePanel({
         {/* Status Indicator */}
         <div className="flex items-center gap-2">
           {status === "PENDING" && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-semibold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300">
               <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
               Pending
             </span>
           )}
           {status === "PROCESSING" && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/60 dark:text-blue-300">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-semibold bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/60 dark:text-blue-300">
               <RefreshCw className="h-3 w-3 animate-spin text-blue-600" />
               Processing
             </span>
           )}
           {status === "COMPLETED" && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300">
               <CheckCircle2 className="h-3 w-3 text-emerald-600" />
               Completed
             </span>
           )}
           {status === "FAILED" && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-100 text-red-800 border border-red-300 dark:bg-red-950/60 dark:text-red-300">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-semibold bg-red-100 text-red-800 border border-red-300 dark:bg-red-950/60 dark:text-red-300">
               <AlertTriangle className="h-3 w-3 text-red-600" />
               Failed
             </span>
@@ -514,7 +514,7 @@ export function AudioIntelligencePanel({
           </div>
           <div className="space-y-1 max-w-sm">
             <h4 className="text-xs font-semibold text-foreground">Transcribe Call Audio with Deepgram Nova-3</h4>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Transcribes Hindi + English (Hinglish) code-switching with speaker separation and exact timestamps.
             </p>
           </div>
@@ -537,7 +537,7 @@ export function AudioIntelligencePanel({
             <p className="text-xs text-foreground font-semibold">
               {status === "PENDING" ? "Transcription Job Queued…" : "Deepgram Nova-3 is transcribing audio…"}
             </p>
-            <p className="text-[11px] text-muted-foreground animate-pulse">
+            <p className="text-2xs text-muted-foreground animate-pulse">
               Recognizing Hindi and English speech, identifying speakers, and extracting timestamps.
             </p>
           </div>
@@ -548,7 +548,7 @@ export function AudioIntelligencePanel({
       {error && status === "FAILED" && (
         <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-800 dark:bg-red-950/30 dark:border-red-900/50 dark:text-red-300 space-y-2">
           <div className="flex items-start gap-2.5">
-            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-red-600" />
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
             <div className="flex-1 text-xs">
               <span className="font-bold">Transcription Failed: </span>
               <span>{error}</span>
@@ -558,7 +558,8 @@ export function AudioIntelligencePanel({
             <button
               type="button"
               onClick={handleRetry}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 active:scale-95 transition-all"
+              aria-label="Retry transcription"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-destructive px-3 py-1.5 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
             >
               <RefreshCw className="h-3 w-3" /> Retry Transcription
             </button>
@@ -581,7 +582,8 @@ export function AudioIntelligencePanel({
                   type="button"
                   onClick={() => requestAudioTicket(leadId)}
                   disabled={ticketLoading}
-                  className="px-2 py-0.5 text-[11px] font-semibold rounded bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shrink-0"
+                  aria-label="Retry audio ticket connection"
+                  className="px-2 py-0.5 text-2xs font-semibold rounded bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors shrink-0"
                 >
                   {ticketLoading ? "Connecting…" : "Retry"}
                 </button>
@@ -592,7 +594,8 @@ export function AudioIntelligencePanel({
                 <button
                   type="button"
                   onClick={togglePlay}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-neu-btn hover:opacity-90 active:scale-95 transition-all"
+                  aria-label={isPlaying ? "Pause call audio" : "Play call audio"}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-neu-btn hover:opacity-90 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
                   title={isPlaying ? "Pause" : "Play"}
                 >
                   {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
@@ -606,7 +609,7 @@ export function AudioIntelligencePanel({
 
               {/* Playback Speed Controls */}
               <div className="flex items-center gap-2">
-                <div className="flex items-center rounded-lg border border-border bg-background/50 p-0.5 text-[11px] font-mono">
+                <div className="flex items-center rounded-lg border border-border bg-background/50 p-0.5 text-2xs font-mono">
                   {[1, 1.25, 1.5, 2].map((rate) => (
                     <button
                       key={rate}
@@ -615,8 +618,9 @@ export function AudioIntelligencePanel({
                         setPlaybackRate(rate);
                         if (audioRef.current) audioRef.current.playbackRate = rate;
                       }}
+                      aria-label={`Set playback speed to ${rate}x`}
                       className={cn(
-                        "px-1.5 py-0.5 rounded",
+                        "px-1.5 py-0.5 rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                         playbackRate === rate ? "bg-primary text-primary-foreground font-bold" : "text-muted-foreground hover:text-foreground"
                       )}
                     >
@@ -633,7 +637,8 @@ export function AudioIntelligencePanel({
                     setIsMuted(next);
                     if (audioRef.current) audioRef.current.muted = next;
                   }}
-                  className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
+                  aria-label={isMuted ? "Unmute call audio" : "Mute call audio"}
+                  className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors"
                   title={isMuted ? "Unmute" : "Mute"}
                 >
                   {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
@@ -649,68 +654,90 @@ export function AudioIntelligencePanel({
               step={0.1}
               value={currentTime}
               onChange={(e) => handleSeekTo(parseFloat(e.target.value))}
-              className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+              aria-label="Audio playback seek scrubber"
+              className="w-full h-1.5 bg-slate-100 dark:bg-secondary rounded-lg cursor-pointer appearance-ancent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex items-center justify-between border-b border-border/70 pb-2">
-            <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-between border-b border-border/70 pb-2 gap-4">
+            <div
+              role="tablist"
+              aria-label="Call detail views"
+              className="inline-flex w-[100%] sm:w-[70%] flex-wrap items-center gap-1 rounded-xl border border-border/70 bg-muted/40 p-1 shadow-neu-inset-sm"
+            >
+              {/* Transcript */}
               <button
+                role="tab"
                 type="button"
+                aria-selected={activeTab === "transcript"}
                 onClick={() => setActiveTab("transcript")}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
+                  "flex flex-1 min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all sm:flex-none sm:px-3",
                   activeTab === "transcript"
                     ? "bg-primary text-primary-foreground shadow-neu-btn"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 )}
               >
-                Transcript ({data.utterances?.length || 0} segments)
+                <span className="truncate">Transcript</span>
+                <span className="hidden sm:inline shrink-0 tabular-nums">
+                  ({data.utterances?.length || 0})
+                </span>
               </button>
+
+              {/* Insights */}
               <button
+                role="tab"
                 type="button"
+                aria-selected={activeTab === "insights"}
                 onClick={() => setActiveTab("insights")}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all",
+                  "flex flex-1 min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all sm:flex-none sm:px-3",
                   activeTab === "insights"
                     ? "bg-primary text-primary-foreground shadow-neu-btn"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 )}
               >
-                <Sparkles className="h-3 w-3 text-amber-500" />
-                AI Call Insights
-                {data.aiAnalysis && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                <Sparkles className="hidden sm:inline h-3 w-3 shrink-0 text-amber-500" />
+                <span className="truncate">
+                  <span className="sm:hidden">Insights</span>
+                  <span className="hidden sm:inline">AI Call Insights</span>
+                </span>
+                {data.aiAnalysis && (
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                )}
               </button>
+
+              {/* Mapping */}
               <button
+                role="tab"
                 type="button"
+                aria-selected={activeTab === "mapping"}
                 onClick={() => setActiveTab("mapping")}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all",
+                  "flex flex-1 min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all sm:flex-none sm:px-3",
                   activeTab === "mapping"
                     ? "bg-primary text-primary-foreground shadow-neu-btn"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 )}
               >
-                <Users className="h-3 w-3" />
-                Speaker Mapping ({(data.speakers || []).length})
+                <Users className="hidden sm:inline h-3 w-3 shrink-0" />
+                <span className="truncate">
+                  <span className="sm:hidden">Speakers</span>
+                  <span className="hidden sm:inline">Speaker Mapping</span>
+                </span>
+                <span className="hidden sm:inline shrink-0 tabular-nums">
+                  ({(data.speakers || []).length})
+                </span>
               </button>
             </div>
 
             {/* Copy & Retranscribe Buttons */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground p-1 rounded hover:bg-muted/50"
-                title="Copy verbatim transcript"
-              >
-                {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-              </button>
+            <div className="flex items-center">
               <button
                 type="button"
                 onClick={() => handleStartTranscription(true)}
-                className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
+                className="w-[55px] sm:w-[100%] inline-flex items-center gap-1 text-2xs sm:text-sm text-primary hover:underline"
                 title="Force re-transcription"
               >
                 <RefreshCw className="h-3 w-3" /> Re-run
@@ -733,19 +760,19 @@ export function AudioIntelligencePanel({
                     className="w-full rounded-lg border border-border/70 bg-background/50 pl-8 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                   {searchQuery && (
-                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">
+                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-3xs text-muted-foreground">
                       {filteredUtterances.length} matches
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <span>View:</span>
+                  {/* <span>View:</span> */}
                   <button
                     type="button"
                     onClick={() => setViewMode("utterances")}
                     className={cn(
-                      "px-2 py-0.5 rounded text-[11px]",
+                      "px-2 py-0.5 rounded text-2xs",
                       viewMode === "utterances" ? "bg-muted font-bold text-foreground" : "hover:text-foreground"
                     )}
                   >
@@ -755,7 +782,7 @@ export function AudioIntelligencePanel({
                     type="button"
                     onClick={() => setViewMode("paragraphs")}
                     className={cn(
-                      "px-2 py-0.5 rounded text-[11px]",
+                      "px-2 py-0.5 rounded text-2xs",
                       viewMode === "paragraphs" ? "bg-muted font-bold text-foreground" : "hover:text-foreground"
                     )}
                   >
@@ -765,11 +792,19 @@ export function AudioIntelligencePanel({
                     type="button"
                     onClick={() => setViewMode("raw")}
                     className={cn(
-                      "px-2 py-0.5 rounded text-[11px]",
+                      "px-2 py-0.5 rounded text-2xs",
                       viewMode === "raw" ? "bg-muted font-bold text-foreground" : "hover:text-foreground"
                     )}
                   >
                     Raw Text
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground p-1 rounded hover:bg-muted/50"
+                    title="Copy verbatim transcript"
+                  >
+                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
                   </button>
                 </div>
               </div>
@@ -801,12 +836,12 @@ export function AudioIntelligencePanel({
                             <div className="flex items-center gap-1.5">
                               <span
                                 className={cn(
-                                  "font-bold text-[11px] px-1.5 py-0.5 rounded font-mono",
+                                  "font-bold text-2xs px-1.5 py-0.5 rounded font-mono",
                                   role === "AGENT"
                                     ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                                     : role === "CUSTOMER"
-                                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
-                                    : "bg-muted text-muted-foreground"
+                                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                                      : "bg-muted text-muted-foreground"
                                 )}
                               >
                                 {label}
@@ -815,7 +850,7 @@ export function AudioIntelligencePanel({
 
                             <button
                               type="button"
-                              className="inline-flex items-center gap-1 font-mono text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                              className="inline-flex items-center gap-1 font-mono text-3xs text-muted-foreground hover:text-primary transition-colors"
                               title="Click to seek audio here"
                             >
                               <Clock className="h-2.5 w-2.5" />
@@ -844,20 +879,20 @@ export function AudioIntelligencePanel({
                         onClick={() => handleSeekTo(p.start)}
                         className="cursor-pointer rounded-xl border border-border/60 bg-background/40 p-3 hover:bg-muted/30 transition-all space-y-1"
                       >
-                        <div className="flex items-center justify-between text-[11px]">
+                        <div className="flex items-center justify-between text-2xs">
                           <span
                             className={cn(
                               "font-bold font-mono px-1.5 py-0.2 rounded",
                               role === "AGENT"
                                 ? "text-blue-600 dark:text-blue-400"
                                 : role === "CUSTOMER"
-                                ? "text-emerald-600 dark:text-emerald-400"
-                                : "text-muted-foreground"
+                                  ? "text-emerald-600 dark:text-emerald-400"
+                                  : "text-muted-foreground"
                             )}
                           >
                             {label}
                           </span>
-                          <span className="font-mono text-[10px] text-muted-foreground">
+                          <span className="font-mono text-3xs text-muted-foreground">
                             {formatTime(p.start)} - {formatTime(p.end)}
                           </span>
                         </div>
@@ -889,7 +924,7 @@ export function AudioIntelligencePanel({
                   </div>
                   <div className="space-y-1 max-w-sm">
                     <h4 className="text-xs font-semibold text-foreground">Extract Call Insights with OpenRouter AI</h4>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-2xs text-muted-foreground">
                       Synthesize customer objections, purchase intent, agent communication quality, commitments, and summary from the verbatim transcript.
                     </p>
                   </div>
@@ -915,17 +950,18 @@ export function AudioIntelligencePanel({
               ) : (
                 <div className="space-y-3.5">
                   {/* AI Disclaimer Banner */}
-                  <div className="flex items-center justify-between text-[11px] px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl text-amber-800 dark:text-amber-300">
+                  <div className="flex items-center justify-between text-2xs px-3 py-1.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl text-amber-800 dark:text-amber-300">
                     <span className="font-semibold flex items-center gap-1.5">
                       <Bot className="h-3.5 w-3.5 text-amber-600" />
-                      AI-Generated Call Insights ({data.aiAnalysis.analyzedModel})
+                      AI-Generated Call Insights <p className="hidden sm:inline">({data.aiAnalysis.analyzedModel})</p>
                     </span>
                     <button
                       type="button"
                       disabled={isAnalyzing}
                       onClick={handleAnalyzeWithAi}
-                      className="text-primary hover:underline font-semibold"
+                      className="flex items-center gap-1 text-primary hover:underline font-semibold"
                     >
+                      <RotateCcw className="h-3.5 w-3.5" />
                       Re-analyze
                     </button>
                   </div>
@@ -933,43 +969,43 @@ export function AudioIntelligencePanel({
                   {/* Summary & Call Outcome */}
                   <div className="rounded-xl border border-border/70 bg-muted/20 p-3.5 space-y-2 shadow-neu-inset-sm">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] uppercase font-bold tracking-wider font-mono text-muted-foreground">
+                      <span className="text-3xs uppercase font-bold tracking-wider font-mono text-muted-foreground">
                         Call Summary
                       </span>
                       {data.aiAnalysis.callOutcome && (
-                        <span className="font-mono text-[10px] uppercase font-bold px-2 py-0.5 rounded-md border bg-primary/10 text-primary border-primary/30">
+                        <span className="font-mono text-3xs uppercase font-bold px-2 py-0.5 rounded-md border bg-primary/10 text-primary border-primary/30">
                           {data.aiAnalysis.callOutcome.replace(/_/g, " ")}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-foreground leading-relaxed">{data.aiAnalysis.summary}</p>
+                    <p className="text-xs text-foreground leading-relaxed text-justify">{data.aiAnalysis.summary}</p>
                   </div>
 
                   {/* 2-Column Grid: Objections & Commitments */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {/* Customer Objections */}
                     <div className="rounded-xl border border-border/70 p-3 bg-muted/10 space-y-1.5">
-                      <span className="text-[10px] uppercase font-bold tracking-wider font-mono text-muted-foreground flex items-center gap-1.5">
+                      <span className="text-3xs uppercase font-bold tracking-wider font-mono text-muted-foreground flex items-center gap-1.5">
                         <AlertTriangle className="h-3 w-3 text-amber-500" />
                         Customer Objections
                       </span>
                       {data.aiAnalysis.customerObjections && data.aiAnalysis.customerObjections.length > 0 ? (
                         <ul className="space-y-1 text-xs">
                           {data.aiAnalysis.customerObjections.map((obj, i) => (
-                            <li key={i} className="text-muted-foreground leading-tight flex items-start gap-1.5">
+                            <li key={i} className="text-muted-foreground leading-tight flex text-start gap-1.5">
                               <span className="text-amber-500 font-bold">•</span>
-                              <span>{obj}</span>
+                              <span className="text-justify">{obj}</span>
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-[11px] text-muted-foreground italic">No objections identified</p>
+                        <p className="text-2xs text-muted-foreground italic">No objections identified</p>
                       )}
                     </div>
 
                     {/* Commitments Made */}
                     <div className="rounded-xl border border-border/70 p-3 bg-muted/10 space-y-1.5">
-                      <span className="text-[10px] uppercase font-bold tracking-wider font-mono text-muted-foreground flex items-center gap-1.5">
+                      <span className="text-3xs uppercase font-bold tracking-wider font-mono text-muted-foreground flex items-center gap-1.5">
                         <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                         Commitments Made
                       </span>
@@ -978,12 +1014,12 @@ export function AudioIntelligencePanel({
                           {data.aiAnalysis.commitments.map((com, i) => (
                             <li key={i} className="text-muted-foreground leading-tight flex items-start gap-1.5">
                               <span className="text-emerald-500 font-bold">•</span>
-                              <span>{com}</span>
+                              <span className="text-justify">{com}</span>
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-[11px] text-muted-foreground italic">No explicit commitments noted</p>
+                        <p className="text-2xs text-muted-foreground italic">No explicit commitments noted</p>
                       )}
                     </div>
                   </div>
@@ -992,11 +1028,11 @@ export function AudioIntelligencePanel({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {data.aiAnalysis.customerInterestAndIntent && (
                       <div className="rounded-xl border border-border/70 p-3 bg-muted/10 space-y-1">
-                        <span className="text-[10px] uppercase font-bold tracking-wider font-mono text-muted-foreground flex items-center gap-1.5">
+                        <span className="text-3xs uppercase font-bold tracking-wider font-mono text-muted-foreground flex items-center gap-1.5">
                           <TrendingUp className="h-3 w-3 text-blue-500" />
                           Interest & Purchase Intent
                         </span>
-                        <p className="text-xs text-foreground leading-relaxed">
+                        <p className="text-xs text-foreground leading-relaxed text-justify">
                           {data.aiAnalysis.customerInterestAndIntent}
                         </p>
                       </div>
@@ -1004,11 +1040,11 @@ export function AudioIntelligencePanel({
 
                     {data.aiAnalysis.agentCommunicationQuality && (
                       <div className="rounded-xl border border-border/70 p-3 bg-muted/10 space-y-1">
-                        <span className="text-[10px] uppercase font-bold tracking-wider font-mono text-muted-foreground flex items-center gap-1.5">
+                        <span className="text-3xs uppercase font-bold tracking-wider font-mono text-muted-foreground flex items-center gap-1.5">
                           <UserCheck className="h-3 w-3 text-purple-500" />
                           Agent Communication Quality
                         </span>
-                        <p className="text-xs text-foreground leading-relaxed">
+                        <p className="text-xs text-foreground leading-relaxed text-justify">
                           {data.aiAnalysis.agentCommunicationQuality}
                         </p>
                       </div>
@@ -1018,7 +1054,7 @@ export function AudioIntelligencePanel({
                   {/* Suggested Next Actions */}
                   {data.aiAnalysis.suggestedNextActions && data.aiAnalysis.suggestedNextActions.length > 0 && (
                     <div className="rounded-xl border border-border/70 p-3 bg-muted/10 space-y-1.5">
-                      <span className="text-[10px] uppercase font-bold tracking-wider font-mono text-muted-foreground flex items-center gap-1.5">
+                      <span className="text-3xs uppercase font-bold tracking-wider font-mono text-muted-foreground flex items-center gap-1.5">
                         <ListTodo className="h-3 w-3 text-primary" />
                         Suggested Next Actions
                       </span>
@@ -1026,7 +1062,7 @@ export function AudioIntelligencePanel({
                         {data.aiAnalysis.suggestedNextActions.map((action, i) => (
                           <li key={i} className="text-muted-foreground leading-tight flex items-start gap-1.5">
                             <span className="text-primary font-bold">→</span>
-                            <span>{action}</span>
+                            <span className="text-justify">{action}</span>
                           </li>
                         ))}
                       </ul>
@@ -1043,12 +1079,12 @@ export function AudioIntelligencePanel({
               <div className="flex items-center justify-between pb-2">
                 <div>
                   <h4 className="text-xs font-bold text-foreground">Manual Speaker Identification</h4>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-2xs text-muted-foreground">
                     Assign detected speakers to Agent, Customer, or Unknown. Changes reflect across all transcript segments.
                   </p>
                 </div>
                 {isSavingMapping && (
-                  <span className="text-[11px] text-primary flex items-center gap-1 animate-pulse">
+                  <span className="text-2xs text-primary flex items-center gap-1 animate-pulse">
                     <RefreshCw className="h-3 w-3 animate-spin" /> Saving…
                   </span>
                 )}
@@ -1073,13 +1109,13 @@ export function AudioIntelligencePanel({
                           </div>
                           <div>
                             <span className="text-xs font-bold text-foreground">Speaker {spk.speakerId}</span>
-                            <p className="text-[10px] text-muted-foreground">Original Deepgram Diarization ID</p>
+                            <p className="text-3xs text-muted-foreground">Original Deepgram Diarization ID</p>
                           </div>
                         </div>
 
                         {/* Role Selector */}
                         <div className="flex items-center gap-2">
-                          <label className="text-[11px] text-muted-foreground">Role:</label>
+                          <label className="text-2xs text-muted-foreground">Role:</label>
                           <select
                             value={currentRole}
                             disabled={isSavingMapping}
@@ -1102,7 +1138,7 @@ export function AudioIntelligencePanel({
           )}
 
           {/* Footer Metadata Diagnostics */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/50 text-[10px] text-muted-foreground font-mono">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/50 text-3xs text-muted-foreground font-mono">
             <div className="flex items-center gap-3">
               <span>Model: {data.model || "nova-3"}</span>
               <span>•</span>

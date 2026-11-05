@@ -14,6 +14,11 @@ const config: Config = {
         sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
         mono: ["var(--font-jetbrains-mono)", "JetBrains Mono", "monospace"],
       },
+      fontSize: {
+        "3xs": ["0.6875rem", { lineHeight: "0.875rem" }], // 11px / 14px (enforces 11px floor)
+        "2xs": ["0.6875rem", { lineHeight: "0.875rem" }], // 11px / 14px (clean alias)
+        "ui-sm": ["0.8125rem", { lineHeight: "1.125rem" }], // 13px / 18px (dense CRM secondary)
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
