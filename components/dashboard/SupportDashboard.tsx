@@ -113,16 +113,16 @@ export function SupportDashboard() {
               <Sparkles className="w-4.5 h-4.5" />
             </div>
             <div>
-              <p className="text-[14px] font-semibold text-foreground">
+              <p className="text-sm font-semibold text-foreground">
                 {readyToAllocate.length} Leads 3-Point Verified & Ready for Assignment
               </p>
-              <p className="text-[13px] text-muted-foreground">
+              <p className="text-ui-sm text-muted-foreground">
                 Date, time slot, and postal address confirmed. Ready to hand off to Sales Executives.
               </p>
             </div>
           </div>
           <Link href="/support">
-            <Button size="sm" variant="success" className="text-[13px] h-8 px-3">
+            <Button size="sm" variant="success" className="text-ui-sm h-8 px-3">
               Allocate Now
             </Button>
           </Link>
@@ -153,7 +153,7 @@ export function SupportDashboard() {
             noPadding
           >
             {supportLeads.length === 0 ? (
-              <div className="p-6 text-center text-[13px] text-muted-foreground">
+              <div className="p-6 text-center text-ui-sm text-muted-foreground">
                 No active leads in support.
               </div>
             ) : (
@@ -166,12 +166,12 @@ export function SupportDashboard() {
                   return (
                     <div key={lead.id} className="p-4 hover:bg-muted/30 transition-colors">
                       <div className="flex items-center justify-between gap-2">
-                        <Link href={`/leads/${lead.id}`} className="font-semibold text-foreground hover:text-primary transition-colors text-[13.5px] truncate">
+                        <Link href={`/leads/${lead.id}`} className="font-semibold text-foreground hover:text-primary transition-colors text-ui-sm truncate">
                           {lead.name}
                         </Link>
                         <span
                           className={cn(
-                            "font-mono text-[11px] px-2 py-0.5 rounded-md font-semibold border",
+                            "font-mono text-2xs px-2 py-0.5 rounded-md font-semibold border",
                             isDone
                               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                               : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
@@ -180,7 +180,7 @@ export function SupportDashboard() {
                           {completedCount}/3 Checks
                         </span>
                       </div>
-                      <div className="mt-1 flex items-center justify-between text-[12px] font-mono text-muted-foreground">
+                      <div className="mt-1 flex items-center justify-between text-xs font-mono text-muted-foreground">
                         <span>{lead.leadCode}</span>
                         <span>{lead.supportDetails?.allocatedTo || "Unallocated"}</span>
                       </div>

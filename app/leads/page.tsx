@@ -103,7 +103,7 @@ export default function LeadsPage() {
       <PageHeader
         title="Leads Directory"
         description="Master database of all enterprise accounts across the 5-stage workflow pipeline."
-        badge={<span suppressHydrationWarning className="text-[12px] font-mono bg-muted text-muted-foreground px-2.5 py-1 rounded-md border border-border/80 font-medium">{leads.length} Records</span>}
+        badge={<span suppressHydrationWarning className="text-xs font-mono bg-muted text-muted-foreground px-2.5 py-1 rounded-md border border-border/80 font-medium">{leads.length} Records</span>}
       >
         <Link href="/marketing">
           <Button size="md" leftIcon={<Plus className="w-4 h-4" />}>
@@ -125,7 +125,7 @@ export default function LeadsPage() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="flex h-10 w-full rounded-xl border border-border/80 bg-background/80 shadow-neu-inset pl-10 pr-3.5 py-2 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
+              className="flex h-10 w-full rounded-xl border border-border/80 bg-background/80 shadow-neu-inset pl-10 pr-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
             />
           </div>
 
@@ -136,7 +136,7 @@ export default function LeadsPage() {
                 setDepartmentFilter(e.target.value as Department | "all");
                 setCurrentPage(1);
               }}
-              className="flex h-10 w-full rounded-xl border border-border/80 bg-background/80 shadow-neu-inset px-3 py-2 text-[13.5px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-medium transition-all"
+              className="flex h-10 w-full rounded-xl border border-border/80 bg-background/80 shadow-neu-inset px-3 py-2 text-ui-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-medium transition-all"
             >
               <option value="all">All Departments</option>
               <option value="marketing">Marketing</option>
@@ -155,7 +155,7 @@ export default function LeadsPage() {
                 setStatusFilter(e.target.value as LeadStatus | "all");
                 setCurrentPage(1);
               }}
-              className="flex h-10 w-full rounded-xl border border-border/80 bg-background/80 shadow-neu-inset px-3 py-2 text-[13.5px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-medium transition-all"
+              className="flex h-10 w-full rounded-xl border border-border/80 bg-background/80 shadow-neu-inset px-3 py-2 text-ui-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-medium transition-all"
             >
               <option value="all">All Statuses</option>
               <option value="new">New Entry</option>
@@ -173,7 +173,7 @@ export default function LeadsPage() {
               size="sm"
               onClick={resetFilters}
               leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
-              className="text-[13px] h-10 text-muted-foreground px-3 shrink-0 rounded-xl"
+              className="text-ui-sm h-10 text-muted-foreground px-3 shrink-0 rounded-xl"
             >
               Reset
             </Button>
@@ -198,7 +198,7 @@ export default function LeadsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-border bg-muted/40 text-muted-foreground font-mono text-[12px] uppercase tracking-wider">
+                  <tr className="border-b border-border bg-muted/40 text-muted-foreground font-mono text-xs uppercase tracking-wider">
                     <th
                       className="py-3 px-5 font-semibold cursor-pointer hover:text-foreground select-none"
                       onClick={() => toggleSort("name")}
@@ -237,24 +237,24 @@ export default function LeadsPage() {
                     <tr key={lead.id} className="hover:bg-muted/40 transition-colors group">
                       <td className="py-3.5 px-5">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold font-mono text-[12px] shrink-0 border border-primary/20">
+                          <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold font-mono text-xs shrink-0 border border-primary/20">
                             {getInitials(lead.name)}
                           </div>
                           <div className="min-w-0">
                             <Link
                               href={`/leads/${lead.id}`}
-                              className="font-semibold text-foreground hover:text-primary transition-colors truncate block text-[14px]"
+                              className="font-semibold text-foreground hover:text-primary transition-colors truncate block text-sm"
                             >
                               {lead.name}
                             </Link>
-                            <span className="text-[12px] font-mono text-muted-foreground">
+                            <span className="text-xs font-mono text-muted-foreground">
                               {lead.leadCode}
                             </span>
                           </div>
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-5 font-mono text-[13px] text-foreground/80">
+                      <td className="py-3.5 px-5 font-mono text-ui-sm text-foreground/80">
                         <div className="flex items-center gap-1.5">
                           <span>{lead.contactNumber}</span>
                           <button
@@ -267,7 +267,7 @@ export default function LeadsPage() {
                             <Copy className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <span className="text-[12px] text-muted-foreground block font-sans mt-0.5">
+                        <span className="text-xs text-muted-foreground block font-sans mt-0.5">
                           {lead.city || "India"}
                         </span>
                       </td>
@@ -280,24 +280,24 @@ export default function LeadsPage() {
                         <StatusBadge status={lead.status} />
                       </td>
 
-                      <td className="py-3.5 px-5 text-muted-foreground font-mono text-[12px] tabular-nums">
+                      <td className="py-3.5 px-5 text-muted-foreground font-mono text-xs tabular-nums">
                         {lead.date ? (
                           <div>
-                            <span className="font-semibold text-foreground block text-[13px]">{lead.date}</span>
-                            <span className="text-[12px] text-muted-foreground">{lead.time || "Slot pending"}</span>
+                            <span className="font-semibold text-foreground block text-ui-sm">{lead.date}</span>
+                            <span className="text-xs text-muted-foreground">{lead.time || "Slot pending"}</span>
                           </div>
                         ) : (
                           <span className="text-muted-foreground/60 italic font-sans">—</span>
                         )}
                       </td>
 
-                      <td className="py-3.5 px-5 font-mono text-[12px] text-muted-foreground tabular-nums">
+                      <td className="py-3.5 px-5 font-mono text-xs text-muted-foreground tabular-nums">
                         {formatDate(lead.createdAt)}
                       </td>
 
                       <td className="py-3.5 px-5 text-right">
                         <Link href={`/leads/${lead.id}`}>
-                          <Button size="sm" variant="outline" className="h-8 text-[13px] px-3" leftIcon={<Eye className="w-3.5 h-3.5" />}>
+                          <Button size="sm" variant="outline" className="h-8 text-ui-sm px-3" leftIcon={<Eye className="w-3.5 h-3.5" />}>
                             View
                           </Button>
                         </Link>
@@ -310,8 +310,8 @@ export default function LeadsPage() {
           )}
 
           {!isLoading && filteredLeads.length > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 border-t border-border/80 text-[13px]">
-              <span className="text-muted-foreground font-mono text-[12px] tabular-nums">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 border-t border-border/80 text-ui-sm">
+              <span className="text-muted-foreground font-mono text-xs tabular-nums">
                 Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
                 {Math.min(currentPage * itemsPerPage, filteredLeads.length)} of{" "}
                 {filteredLeads.length} leads
@@ -324,12 +324,12 @@ export default function LeadsPage() {
                   onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                   disabled={currentPage === 1}
                   leftIcon={<ChevronLeft className="w-3.5 h-3.5" />}
-                  className="h-8 px-3 text-[13px]"
+                  className="h-8 px-3 text-ui-sm"
                 >
                   Prev
                 </Button>
 
-                <div className="flex items-center gap-1 font-mono text-[12px] px-2">
+                <div className="flex items-center gap-1 font-mono text-xs px-2">
                   <span className="font-semibold text-foreground">{currentPage}</span>
                   <span className="text-muted-foreground">/</span>
                   <span>{totalPages}</span>
@@ -341,7 +341,7 @@ export default function LeadsPage() {
                   onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
                   disabled={currentPage >= totalPages}
                   rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
-                  className="h-8 px-3 text-[13px]"
+                  className="h-8 px-3 text-ui-sm"
                 >
                   Next
                 </Button>

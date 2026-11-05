@@ -5,22 +5,22 @@
 @layer base {
   :root {
     /* Premium Neumorphic (Soft UI) Enterprise Theme Tokens */
-    --background: 248 24% 95.5%;      /* #F1F0F7 Warm Lavender-Gray Base Surface */
-    --foreground: 240 18% 15%;        /* #1F222E High-Contrast Deep Charcoal Slate */
+    --background: 248 24% 95.5%; /* #F1F0F7 Warm Lavender-Gray Base Surface */
+    --foreground: 240 18% 15%; /* #1F222E High-Contrast Deep Charcoal Slate */
 
-    --card: 248 24% 96%;              /* #F4F3FA Micro-Raised Soft Neumorphic Surface */
+    --card: 248 24% 96%; /* #F4F3FA Micro-Raised Soft Neumorphic Surface */
     --card-foreground: 240 18% 15%;
 
     --popover: 248 24% 96.5%;
     --popover-foreground: 240 18% 15%;
 
-    --primary: 250 84% 58%;           /* #614BEE Refined Royal Indigo-Violet */
+    --primary: 250 84% 58%; /* #614BEE Refined Royal Indigo-Violet */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 248 20% 93%;
     --secondary-foreground: 240 18% 15%;
 
-    --muted: 248 20% 92%;            /* #E8E6F0 Sunken Recessed Fill */
+    --muted: 248 20% 92%; /* #E8E6F0 Sunken Recessed Fill */
     --muted-foreground: 245 10% 46%; /* #6D7080 High-Legibility Secondary Text */
 
     --accent: 248 20% 93%;
@@ -38,87 +38,104 @@
     --info: 217 91% 58%;
     --info-foreground: 0 0% 100%;
 
-    --border: 248 18% 88%;           /* #DDDCE7 Delicate Hairline Neumorphic Border */
+    --border: 248 18% 88%; /* #DDDCE7 Delicate Hairline Neumorphic Border */
     --input: 248 18% 86%;
     --ring: 250 84% 58%;
 
-    --radius: 0.875rem;             /* 14px refined neumorphic corner radius */
+    --radius: 0.875rem; /* 14px refined neumorphic corner radius */
 
     /* Neumorphic Dual Shadows (Light Theme) */
     --neu-light-highlight: rgba(255, 255, 255, 0.95);
     --neu-dark-shadow: rgba(166, 161, 189, 0.28);
-    --neu-dark-shadow-sm: rgba(166, 161, 189, 0.20);
+    --neu-dark-shadow-sm: rgba(166, 161, 189, 0.2);
     --neu-dark-shadow-lg: rgba(166, 161, 189, 0.35);
 
-    --neu-shadow-raised: 6px 6px 14px var(--neu-dark-shadow), -6px -6px 14px var(--neu-light-highlight);
-    --neu-shadow-raised-sm: 3px 3px 8px var(--neu-dark-shadow-sm), -3px -3px 8px var(--neu-light-highlight);
-    --neu-shadow-raised-lg: 10px 10px 24px var(--neu-dark-shadow-lg), -10px -10px 24px var(--neu-light-highlight);
+    --neu-shadow-raised: 6px 6px 14px var(--neu-dark-shadow),
+      -6px -6px 14px var(--neu-light-highlight);
+    --neu-shadow-raised-sm: 3px 3px 8px var(--neu-dark-shadow-sm),
+      -3px -3px 8px var(--neu-light-highlight);
+    --neu-shadow-raised-lg: 10px 10px 24px var(--neu-dark-shadow-lg),
+      -10px -10px 24px var(--neu-light-highlight);
 
-    --neu-shadow-inset: inset 2px 2px 5px rgba(166, 161, 189, 0.28), inset -2px -2px 5px var(--neu-light-highlight);
-    --neu-shadow-inset-sm: inset 1.5px 1.5px 3.5px rgba(166, 161, 189, 0.22), inset -1.5px -1.5px 3.5px var(--neu-light-highlight);
+    --neu-shadow-inset: inset 2px 2px 5px rgba(166, 161, 189, 0.28),
+      inset -2px -2px 5px var(--neu-light-highlight);
+    --neu-shadow-inset-sm: inset 1.5px 1.5px 3.5px rgba(166, 161, 189, 0.22),
+      inset -1.5px -1.5px 3.5px var(--neu-light-highlight);
 
-    --neu-shadow-btn: 4px 4px 10px rgba(166, 161, 189, 0.26), -4px -4px 10px var(--neu-light-highlight);
-    --neu-shadow-btn-hover: 5px 5px 14px rgba(166, 161, 189, 0.32), -5px -5px 14px rgba(255, 255, 255, 1);
-    --neu-shadow-btn-active: inset 2px 2px 5px rgba(166, 161, 189, 0.35), inset -2px -2px 5px var(--neu-light-highlight);
+    --neu-shadow-btn: 4px 4px 10px rgba(166, 161, 189, 0.26),
+      -4px -4px 10px var(--neu-light-highlight);
+    --neu-shadow-btn-hover: 5px 5px 14px rgba(166, 161, 189, 0.32),
+      -5px -5px 14px rgba(255, 255, 255, 1);
+    --neu-shadow-btn-active: inset 2px 2px 5px rgba(166, 161, 189, 0.35),
+      inset -2px -2px 5px var(--neu-light-highlight);
     --neu-shadow-glow: 0 0 16px rgba(97, 75, 238, 0.25);
   }
 
   .dark {
-    /* Neumorphic Dark Theme (Deep Slate-Navy Soft UI) */
-    --background: 240 14% 10%;       /* #16171E Deep Navy-Slate Canvas */
-    --foreground: 240 10% 94%;       /* #ECEEF4 Crisp Off-White */
+    /* Neumorphic Dark Theme: Midnight Indigo, richer, clearer layering */
+    --background: 238 26% 10.5%; /* #14151F Midnight indigo canvas */
+    --foreground: 235 30% 96%; /* #F1F2F9 Bright, clean off-white */
 
-    --card: 240 13% 12.5%;           /* #1C1E26 Soft Dark Neumorphic Panel */
-    --card-foreground: 240 10% 94%;
+    --card: 238 24% 14.5%; /* #1C1E2D Clearly lifted panel */
+    --card-foreground: 235 30% 96%;
 
-    --popover: 240 13% 13.5%;
-    --popover-foreground: 240 10% 94%;
+    --popover: 238 24% 16.5%; /* #202236 Floating layer */
+    --popover-foreground: 235 30% 96%;
 
-    --primary: 245 85% 65%;          /* #7B68EE Luminous Indigo */
+    --primary: 252 88% 67%; /* #8A6BFA Vivid, glowing violet */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 11% 16%;
-    --secondary-foreground: 240 10% 94%;
+    --secondary: 238 22% 19%; /* #262839 */
+    --secondary-foreground: 235 30% 96%;
 
-    --muted: 240 11% 15%;            /* #1F212B Recessed Dark Well */
-    --muted-foreground: 240 8% 65%;  /* #9BA0B2 Legible Secondary */
+    --muted: 238 24% 8.5%; /* #101119 Deeper recessed wells (inputs, tracks) */
+    --muted-foreground: 236 16% 72%; /* #A9AEC6 Much more legible secondary text */
 
-    --accent: 240 11% 17%;
-    --accent-foreground: 240 10% 94%;
+    --accent: 250 30% 22%; /* #2D2A4A Subtle violet-tinted hover surface */
+    --accent-foreground: 235 30% 96%;
 
-    --destructive: 0 74% 56%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 65%; /* #F25F5F */
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 158 70% 45%;
-    --success-foreground: 0 0% 100%;
+    --success: 156 78% 50%; /* #1CE59E Fresh mint */
+    --success-foreground: 240 30% 8%;
 
-    --warning: 38 92% 52%;
-    --warning-foreground: 0 0% 4%;
+    --warning: 40 96% 58%; /* #FBB92F Warm amber */
+    --warning-foreground: 240 30% 8%;
 
-    --info: 217 91% 62%;
-    --info-foreground: 0 0% 100%;
+    --info: 205 95% 64%; /* #49B2FA Bright sky */
+    --info-foreground: 240 30% 8%;
 
-    --border: 240 10% 18%;           /* #282A36 Dark Hairline Edge */
-    --input: 240 10% 19%;
-    --ring: 245 85% 65%;
+    --border: 238 20% 25%; /* #323450 Visible hairline */
+    --input: 238 20% 28%; /* #383B59 */
+    --ring: 252 88% 72%;
 
-    /* Neumorphic Dual Shadows (Dark Theme) */
-    --neu-light-highlight: rgba(255, 255, 255, 0.035);
-    --neu-dark-shadow: rgba(0, 0, 0, 0.50);
-    --neu-dark-shadow-sm: rgba(0, 0, 0, 0.35);
-    --neu-dark-shadow-lg: rgba(0, 0, 0, 0.65);
+    /* Neumorphic Dual Shadows (Dark): stronger highlight so the soft UI actually reads */
+    --neu-light-highlight: rgba(255, 255, 255, 0.06);
+    --neu-dark-shadow: rgba(3, 4, 12, 0.6);
+    --neu-dark-shadow-sm: rgba(3, 4, 12, 0.45);
+    --neu-dark-shadow-lg: rgba(3, 4, 12, 0.75);
 
-    --neu-shadow-raised: 5px 5px 12px var(--neu-dark-shadow), -4px -4px 10px var(--neu-light-highlight);
-    --neu-shadow-raised-sm: 3px 3px 7px var(--neu-dark-shadow-sm), -2px -2px 6px var(--neu-light-highlight);
-    --neu-shadow-raised-lg: 8px 8px 20px var(--neu-dark-shadow-lg), -6px -6px 16px var(--neu-light-highlight);
+    --neu-shadow-raised: 6px 6px 14px var(--neu-dark-shadow),
+      -5px -5px 12px var(--neu-light-highlight);
+    --neu-shadow-raised-sm: 3px 3px 8px var(--neu-dark-shadow-sm),
+      -3px -3px 7px var(--neu-light-highlight);
+    --neu-shadow-raised-lg: 10px 10px 24px var(--neu-dark-shadow-lg),
+      -7px -7px 18px var(--neu-light-highlight);
 
-    --neu-shadow-inset: inset 2px 2px 6px rgba(0, 0, 0, 0.6), inset -2px -2px 6px var(--neu-light-highlight);
-    --neu-shadow-inset-sm: inset 1.5px 1.5px 4px rgba(0, 0, 0, 0.5), inset -1.5px -1.5px 4px var(--neu-light-highlight);
+    --neu-shadow-inset: inset 3px 3px 7px rgba(3, 4, 12, 0.7),
+      inset -2px -2px 6px var(--neu-light-highlight);
+    --neu-shadow-inset-sm: inset 2px 2px 5px rgba(3, 4, 12, 0.6),
+      inset -1.5px -1.5px 4px var(--neu-light-highlight);
 
-    --neu-shadow-btn: 3px 3px 8px var(--neu-dark-shadow), -2px -2px 6px var(--neu-light-highlight);
-    --neu-shadow-btn-hover: 4px 4px 12px rgba(0, 0, 0, 0.6), -3px -3px 8px rgba(255, 255, 255, 0.06);
-    --neu-shadow-btn-active: inset 2px 2px 5px rgba(0, 0, 0, 0.7), inset -1px -1px 3px var(--neu-light-highlight);
-    --neu-shadow-glow: 0 0 16px rgba(123, 104, 238, 0.3);
+    --neu-shadow-btn: 4px 4px 10px var(--neu-dark-shadow),
+      -3px -3px 8px var(--neu-light-highlight);
+    --neu-shadow-btn-hover: 5px 5px 14px rgba(3, 4, 12, 0.7),
+      -4px -4px 10px rgba(255, 255, 255, 0.085);
+    --neu-shadow-btn-active: inset 3px 3px 6px rgba(3, 4, 12, 0.8),
+      inset -2px -2px 4px var(--neu-light-highlight);
+    --neu-shadow-glow: 0 0 22px rgba(138, 107, 250, 0.4),
+      0 0 6px rgba(138, 107, 250, 0.35);
   }
 
   /* Accent Themes (Light Mode) */
@@ -304,7 +321,9 @@
 }
 
 @keyframes dot-typing {
-  0%, 60%, 100% {
+  0%,
+  60%,
+  100% {
     transform: translateY(0);
     opacity: 0.4;
   }
@@ -319,7 +338,8 @@
   overflow: hidden !important;
   border-radius: 10px !important;
   font-family: var(--font-inter), sans-serif !important;
-  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.08),
+    0 2px 6px -1px rgba(0, 0, 0, 0.04) !important;
   padding: 12px 36px 12px 14px !important;
   animation: toast-slide-in 250ms cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
 }
@@ -401,6 +421,20 @@
 }
 
 /* ───────────────────────────────────────────────────────────── */
+/* View Transitions API: Diagonal Theme Wipe Overrides          */
+/* ───────────────────────────────────────────────────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation: none;
+  height: 100%;
+}
+
+::view-transition-image-pair(root) {
+  isolation: isolate;
+}
+
+/* ───────────────────────────────────────────────────────────── */
 /* Accessibility: prefers-reduced-motion handling               */
 /* ───────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -415,5 +449,26 @@
   [data-sonner-toast]::after {
     animation: none !important;
   }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }
 
+
+/* Let clicks pass through the transition overlay so the page never freezes */
+::view-transition,
+::view-transition-group(*),
+::view-transition-image-pair(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  pointer-events: none;
+}
+
+/* Disable the default cross-fade; the wipe is driven from JS */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}

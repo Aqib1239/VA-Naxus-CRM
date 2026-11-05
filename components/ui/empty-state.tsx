@@ -29,8 +29,8 @@ export function EmptyState({
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card border border-border/70 shadow-neu-btn text-muted-foreground mb-3.5">
         {icon}
       </div>
-      <h3 className="text-[15px] font-semibold text-foreground tracking-tight">{title}</h3>
-      <p className="mt-1 max-w-sm text-[13px] text-muted-foreground leading-relaxed">
+      <h3 className="text-base font-semibold text-foreground tracking-tight">{title}</h3>
+      <p className="mt-1 max-w-sm text-ui-sm text-muted-foreground leading-relaxed">
         {description}
       </p>
       {actionLabel && onAction && (
@@ -38,7 +38,8 @@ export function EmptyState({
           size="sm"
           variant="outline"
           onClick={onAction}
-          className="mt-4"
+          aria-label={actionLabel}
+          className="mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {actionLabel}
         </Button>

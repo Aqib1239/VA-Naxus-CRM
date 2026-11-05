@@ -115,7 +115,7 @@ export function CommunicationDashboard() {
             noPadding
           >
             {withMeeting.length === 0 ? (
-              <div className="p-6 text-center text-[13px] text-muted-foreground">
+              <div className="p-6 text-center text-ui-sm text-muted-foreground">
                 No meetings currently scheduled.
               </div>
             ) : (
@@ -123,14 +123,14 @@ export function CommunicationDashboard() {
                 {withMeeting.slice(0, 5).map((lead) => (
                   <div key={lead.id} className="p-4 hover:bg-muted/30 transition-colors">
                     <div className="flex items-center justify-between gap-2">
-                      <Link href={`/leads/${lead.id}`} className="font-semibold text-foreground hover:text-primary transition-colors text-[13.5px] truncate">
+                      <Link href={`/leads/${lead.id}`} className="font-semibold text-foreground hover:text-primary transition-colors text-ui-sm truncate">
                         {lead.name}
                       </Link>
-                      <span className="text-[11px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                      <span className="text-2xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
                         {lead.leadCode}
                       </span>
                     </div>
-                    <div className="mt-1.5 flex items-center justify-between text-[12px] font-mono text-muted-foreground">
+                    <div className="mt-1.5 flex items-center justify-between text-xs font-mono text-muted-foreground">
                       <span>{lead.communicationDetails?.scheduledDate || "Date TBD"}</span>
                       <span>{lead.communicationDetails?.scheduledTime || "Time TBD"}</span>
                     </div>

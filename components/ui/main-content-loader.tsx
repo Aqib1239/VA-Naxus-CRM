@@ -31,11 +31,11 @@ export function MainContentLoader({
         </div>
 
         <div className="space-y-1">
-          <p className="text-[14px] font-semibold text-foreground tracking-tight">
+          <p className="text-sm font-semibold text-foreground tracking-tight">
             {label}
           </p>
           {description && (
-            <p className="text-[12.5px] text-muted-foreground font-sans">
+            <p className="text-xs text-muted-foreground font-sans">
               {description}
             </p>
           )}

@@ -46,25 +46,25 @@ export function VigilanceCopilot({ leadId, className }: VigilanceCopilotProps) {
     switch (status) {
       case "verified":
         return (
-          <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+          <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-0.5 text-3xs font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
             <CheckCircle2 className="h-3 w-3" /> Verified
           </span>
         );
       case "failed":
         return (
-          <span className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-800 dark:bg-red-950 dark:text-red-300">
+          <span className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2 py-0.5 text-3xs font-bold text-red-800 dark:bg-red-950 dark:text-red-300">
             <XCircle className="h-3 w-3" /> Failed
           </span>
         );
       case "incomplete":
         return (
-          <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+          <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-3xs font-bold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
             <AlertCircle className="h-3 w-3" /> Incomplete
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-3xs font-bold text-muted-foreground">
             <HelpCircle className="h-3 w-3" /> Inconclusive
           </span>
         );
@@ -97,7 +97,7 @@ export function VigilanceCopilot({ leadId, className }: VigilanceCopilotProps) {
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">Vigilance Copilot</h3>
-            <p className="text-[11px] text-muted-foreground italic">
+            <p className="text-2xs text-muted-foreground italic">
               Evidence-based verification audit & compliance checklist
             </p>
           </div>
@@ -108,7 +108,7 @@ export function VigilanceCopilot({ leadId, className }: VigilanceCopilotProps) {
       {/* Mandatory Human Responsibility */}
       <div className="flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50/70 p-2.5 text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-300 text-xs">
         <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
-        <span className="text-[11px] leading-tight">
+        <span className="text-2xs leading-tight">
           <strong>Non-Delegable Verification:</strong> AI findings do not change lead state. The
           human Vigilance Officer must independently listen to the audio and execute the formal
           verification transition.
@@ -127,7 +127,8 @@ export function VigilanceCopilot({ leadId, className }: VigilanceCopilotProps) {
           <button
             type="button"
             onClick={evaluate}
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-neu-btn hover:bg-blue-700 active:shadow-neu-inset transition-all"
+            aria-label="Audit Verification Evidence with AI"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-neu-btn hover:opacity-90 active:shadow-neu-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all"
           >
             <Sparkles className="h-3.5 w-3.5" />
             Audit Verification Evidence
@@ -138,7 +139,7 @@ export function VigilanceCopilot({ leadId, className }: VigilanceCopilotProps) {
       {/* Loading */}
       {loading && (
         <div className="flex flex-col items-center gap-3 py-8">
-          <div className="h-7 w-7 rounded-full border-2 border-blue-500/20 border-t-blue-600 animate-spin" />
+          <div className="h-7 w-7 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
           <p className="text-xs text-muted-foreground font-medium animate-pulse">
             Cross-referencing audio metadata, address & meeting schedules…
           </p>
@@ -147,10 +148,15 @@ export function VigilanceCopilot({ leadId, className }: VigilanceCopilotProps) {
 
       {/* Error */}
       {error && (
-        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-red-700 text-xs">
+        <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-destructive text-xs">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span className="flex-1">{error}</span>
-          <button type="button" onClick={evaluate} className="font-semibold underline">
+          <button
+            type="button"
+            onClick={evaluate}
+            aria-label="Retry verification audit"
+            className="font-semibold underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
             Retry
           </button>
         </div>
@@ -161,16 +167,16 @@ export function VigilanceCopilot({ leadId, className }: VigilanceCopilotProps) {
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3.5">
           {/* Overall finding callout */}
           <div className={cn("rounded-xl border p-3.5 text-xs shadow-neu-inset-sm", getOverallFindingBadge(result.overallFinding))}>
-            <div className="flex items-center justify-between font-bold uppercase tracking-wider text-[11px] mb-1">
+            <div className="flex items-center justify-between font-bold uppercase tracking-wider text-2xs mb-1">
               <span>Overall Finding: {result.overallFinding.replace(/_/g, " ")}</span>
-              <span className="font-mono text-[9px] lowercase opacity-70">advisory only</span>
+              <span className="font-mono text-3xs lowercase opacity-70">advisory only</span>
             </div>
             <p className="leading-relaxed">{result.summary}</p>
           </div>
 
           {/* Checklist items */}
           <div className="space-y-2">
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground font-mono">
+            <h4 className="text-2xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
               Audit Checklist ({result.checks.length} items)
             </h4>
             {result.checks.map((chk, idx) => (
@@ -182,13 +188,13 @@ export function VigilanceCopilot({ leadId, className }: VigilanceCopilotProps) {
                   <span className="font-semibold text-foreground">{chk.requirement}</span>
                   {getStatusBadge(chk.status)}
                 </div>
-                <p className="text-[11px] text-muted-foreground">{chk.explanation}</p>
-                <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground/80 pt-0.5">
+                <p className="text-2xs text-muted-foreground">{chk.explanation}</p>
+                <div className="flex items-center gap-1.5 font-mono text-3xs text-muted-foreground/80 pt-0.5">
                   <span className="font-semibold">Evidence:</span>
                   <span className="truncate">{chk.evidenceReference}</span>
                 </div>
                 {chk.recommendedHumanAction && (
-                  <div className="pt-1 text-[11px] text-primary font-medium">
+                  <div className="pt-1 text-2xs text-primary font-medium">
                     → Recommendation: {chk.recommendedHumanAction}
                   </div>
                 )}
@@ -197,12 +203,13 @@ export function VigilanceCopilot({ leadId, className }: VigilanceCopilotProps) {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-1 border-t border-border/50 text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-between pt-1 border-t border-border/50 text-3xs text-muted-foreground">
             <span>{result.disclaimer}</span>
             <button
               type="button"
               onClick={evaluate}
-              className="inline-flex items-center gap-1 text-primary hover:underline"
+              aria-label="Re-audit verification evidence"
+              className="inline-flex items-center gap-1 text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
             >
               <RefreshCw className="h-3 w-3" /> Re-audit
             </button>

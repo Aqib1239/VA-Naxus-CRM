@@ -123,6 +123,7 @@ build/
 *.orig
 
 HOSTED-SECURITY-AUDIT.md
+.planning
 # Migration Ledgers & Audit Logs
 *migration-ledger*.json
 *-ledger.json

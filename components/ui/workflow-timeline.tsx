@@ -14,7 +14,7 @@ interface WorkflowTimelineProps {
 export function WorkflowTimeline({ history, className }: WorkflowTimelineProps) {
   if (!history || history.length === 0) {
     return (
-      <div className="text-[13px] text-muted-foreground py-4 italic">
+      <div className="text-ui-sm text-muted-foreground py-4 italic">
         No workflow history recorded yet.
       </div>
     );
@@ -47,21 +47,21 @@ export function WorkflowTimeline({ history, className }: WorkflowTimelineProps) 
             <div className="bg-card border border-border/80 rounded-2xl m-1 p-3 shadow-neu-raised space-y-2.5 transition-all hover:shadow-neu-btn-hover">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <h4 className="text-[14px] font-semibold text-foreground">
+                  <h4 className="text-sm font-semibold text-foreground">
                     {item.action}
                   </h4>
-                  <DepartmentBadge department={item.department} showIcon={false} className="py-0.5 text-[11px] px-2" />
+                  <DepartmentBadge department={item.department} showIcon={false} className="py-0.5 text-2xs px-2" />
                 </div>
-                <time className="text-[12px] font-mono text-muted-foreground tabular-nums">
+                <time className="text-xs font-mono text-muted-foreground tabular-nums">
                   {formatDateTime(item.timestamp)}
                 </time>
               </div>
 
-              <p className="text-[13px] text-muted-foreground leading-relaxed break-words [overflow-wrap:anywhere]">
+              <p className="text-ui-sm text-muted-foreground leading-relaxed break-words [overflow-wrap:anywhere]">
                 {item.description}
               </p>
 
-              <div className="flex items-center gap-2 pt-2 border-t border-border/60 text-[12px] text-muted-foreground">
+              <div className="flex items-center gap-2 pt-2 border-t border-border/60 text-xs text-muted-foreground">
                 <span className="font-semibold text-foreground">{item.userName}</span>
                 <span>•</span>
                 <RoleBadge role={item.userRole} size="sm" />

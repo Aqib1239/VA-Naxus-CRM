@@ -71,7 +71,7 @@ export default function LoginPage() {
           <div className="flex justify-center">
             <VANexusLogo variant="full" size="lg" />
           </div>
-          <p className="text-[13px] text-muted-foreground font-medium">
+          <p className="text-ui-sm text-muted-foreground font-medium">
             AI-Powered Customer & Business Operations Platform
           </p>
         </div>
@@ -81,7 +81,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4.5">
             {/* Email Field */}
             <div className="space-y-1.5">
-              <Label htmlFor="login-email" required className="text-[14px]">
+              <Label htmlFor="login-email" required className="text-sm">
                 Corporate Email / Username
               </Label>
               <Input
@@ -93,7 +93,7 @@ export default function LoginPage() {
                 {...register("email")}
               />
               {errors.email && (
-                <p className="text-[12px] text-destructive">
+                <p className="text-xs text-destructive">
                   {errors.email.message}
                 </p>
               )}
@@ -105,13 +105,13 @@ export default function LoginPage() {
                 <Label
                   htmlFor="login-password"
                   required
-                  className="text-[14px]"
+                  className="text-sm"
                 >
                   Password
                 </Label>
                 <Link
                   href="/forgot-password"
-                  className="text-[13px] text-primary hover:underline font-medium"
+                  className="text-ui-sm text-primary hover:underline font-medium"
                 >
                   Forgot password?
                 </Link>
@@ -143,7 +143,7 @@ export default function LoginPage() {
                 />
               </div>
               {errors.password && (
-                <p className="text-[12px] text-destructive">
+                <p className="text-xs text-destructive">
                   {errors.password.message}
                 </p>
               )}
@@ -159,7 +159,7 @@ export default function LoginPage() {
               />
               <Label
                 htmlFor="rememberMe"
-                className="text-[13px] font-normal text-muted-foreground cursor-pointer"
+                className="text-ui-sm font-normal text-muted-foreground cursor-pointer"
               >
                 Remember my login credentials on this workstation
               </Label>
@@ -168,7 +168,7 @@ export default function LoginPage() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full text-[15px] h-11"
+              className="w-full text-base h-11"
               isLoading={isLoading}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
@@ -178,7 +178,7 @@ export default function LoginPage() {
         </div>
 
         {/* Security Footer */}
-        <div className="text-center text-[13px] text-muted-foreground flex items-center justify-center gap-1.5">
+        <div className="text-center text-ui-sm text-muted-foreground flex items-center justify-center gap-1.5">
           <ShieldCheck className="w-4 h-4 text-muted-foreground/80" />
           <span>Role-Based Access Control Protected Frontend Architecture</span>
         </div>

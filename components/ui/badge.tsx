@@ -19,7 +19,7 @@ export function Badge({ className, variant = "default", size = "sm", ...props }:
   };
 
   const sizes = {
-    sm: "px-2.5 py-0.5 text-[11px] font-medium tracking-tight",
+    sm: "px-2.5 py-0.5 text-2xs font-medium tracking-tight",
     md: "px-3 py-1 text-xs font-medium",
   };
 

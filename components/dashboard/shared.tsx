@@ -87,13 +87,13 @@ export function BentoCard({
           <div>
             <div className="flex items-center gap-2.5">
               {title && (
-                <h3 className="text-[16px] font-semibold leading-tight text-foreground tracking-tight">
+                <h3 className="text-base font-semibold leading-tight text-foreground tracking-tight">
                   {title}
                 </h3>
               )}
             </div>
             {description && (
-              <p className="text-[13px] text-muted-foreground mt-0.5 leading-relaxed">
+              <p className="text-ui-sm text-muted-foreground mt-0.5 leading-relaxed">
                 {description}
               </p>
             )}
@@ -132,7 +132,7 @@ export function BentoKpiRow({ metrics }: { metrics: BentoMetric[] }) {
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[13px] font-medium text-muted-foreground truncate">{m.label}</span>
+            <span className="text-ui-sm font-medium text-muted-foreground truncate">{m.label}</span>
             {m.icon && (
               <div className="h-8 w-8 rounded-xl bg-muted/60 dark:bg-muted/40 shadow-neu-inset-sm flex items-center justify-center text-muted-foreground shrink-0 border border-border/60">
                 {m.icon}
@@ -141,15 +141,15 @@ export function BentoKpiRow({ metrics }: { metrics: BentoMetric[] }) {
           </div>
 
           <div className="space-y-1">
-            <div className="text-2xl sm:text-[28px] font-semibold tracking-tight text-foreground font-mono tabular-nums leading-none">
+            <div className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground font-mono tabular-nums leading-none">
               {m.value}
             </div>
             {(m.trend || m.sublabel) && (
-              <div className="flex items-center gap-1.5 text-[12px] pt-1">
+              <div className="flex items-center gap-1.5 text-xs pt-1">
                 {m.trend && (
                   <span
                     className={cn(
-                      "inline-flex items-center gap-0.5 font-medium font-mono text-[11px] px-1.5 py-0.5 rounded-md",
+                      "inline-flex items-center gap-0.5 font-medium font-mono text-2xs px-1.5 py-0.5 rounded-md",
                       m.trend.isPositive !== false
                         ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                         : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
@@ -164,7 +164,7 @@ export function BentoKpiRow({ metrics }: { metrics: BentoMetric[] }) {
                   </span>
                 )}
                 {m.sublabel && (
-                  <span className="text-muted-foreground text-[12px] truncate">
+                  <span className="text-muted-foreground text-xs truncate">
                     {m.sublabel}
                   </span>
                 )}
@@ -211,7 +211,7 @@ export function BentoQueueTable({
       action={
         viewAllHref && (
           <Link href={viewAllHref}>
-            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />} className="h-8 text-[13px]">
+            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />} className="h-8 text-ui-sm">
               View All
             </Button>
           </Link>
@@ -219,7 +219,7 @@ export function BentoQueueTable({
       }
     >
       {leads.length === 0 ? (
-        <div className="p-8 text-center text-[13.5px] text-muted-foreground flex flex-col items-center justify-center gap-2">
+        <div className="p-8 text-center text-ui-sm text-muted-foreground flex flex-col items-center justify-center gap-2">
           <div className="h-10 w-10 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground">
             <CheckCircle2 className="w-5 h-5" />
           </div>
@@ -229,7 +229,7 @@ export function BentoQueueTable({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-border bg-muted/30 text-muted-foreground font-mono text-[12px] uppercase tracking-wider">
+              <tr className="border-b border-border bg-muted/30 text-muted-foreground font-mono text-xs uppercase tracking-wider">
                 <th className="py-3 px-5 font-semibold">Lead Prospect</th>
                 <th className="py-3 px-5 font-semibold">Contact</th>
                 {showDepartment && <th className="py-3 px-5 font-semibold">Department</th>}
@@ -249,23 +249,23 @@ export function BentoQueueTable({
                   <tr key={lead.id} className="hover:bg-muted/30 transition-colors group">
                     <td className="py-3.5 px-5">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold font-mono text-[12px] shrink-0 border border-primary/20">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold font-mono text-xs shrink-0 border border-primary/20">
                           {getInitials(lead.name)}
                         </div>
                         <div className="min-w-0">
                           <Link
                             href={`/leads/${lead.id}`}
-                            className="font-semibold text-foreground hover:text-primary transition-colors truncate block text-[14px]"
+                            className="font-semibold text-foreground hover:text-primary transition-colors truncate block text-sm"
                           >
                             {lead.name}
                           </Link>
-                          <span className="text-[12px] font-mono text-muted-foreground">
+                          <span className="text-xs font-mono text-muted-foreground">
                             {lead.leadCode}
                           </span>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3.5 px-5 font-mono text-foreground/80 text-[13px]">
+                    <td className="py-3.5 px-5 font-mono text-foreground/80 text-ui-sm">
                       {lead.contactNumber}
                     </td>
                     {showDepartment && (
@@ -278,7 +278,7 @@ export function BentoQueueTable({
                     </td>
                     <td className="py-3.5 px-5 text-right">
                       <Link href={targetHref}>
-                        <Button size="sm" variant="outline" className="h-8 text-[13px] px-3">
+                        <Button size="sm" variant="outline" className="h-8 text-ui-sm px-3">
                           {actionLabel}
                         </Button>
                       </Link>
@@ -317,11 +317,11 @@ export function BentoWorkloadMatrix({ stats }: { stats: DashboardStats }) {
           const percent = stats.totalLeads > 0 ? Math.round((d.count / stats.totalLeads) * 100) : 0;
           return (
             <div key={d.label} className="space-y-1.5">
-              <div className="flex justify-between items-center text-[13px]">
+              <div className="flex justify-between items-center text-ui-sm">
                 <Link href={d.href} className="font-medium text-foreground hover:text-primary transition-colors">
                   {d.label}
                 </Link>
-                <span className="font-mono text-muted-foreground tabular-nums text-[12px]">
+                <span className="font-mono text-muted-foreground tabular-nums text-xs">
                   {d.count} ({percent}%)
                 </span>
               </div>
@@ -360,28 +360,28 @@ export function BentoActivityTimeline({
   return (
     <BentoCard title={title} description={description}>
       {events.length === 0 ? (
-        <p className="text-[13px] text-muted-foreground">No recent activity recorded.</p>
+        <p className="text-ui-sm text-muted-foreground">No recent activity recorded.</p>
       ) : (
         <div className="space-y-4">
           {events.map((event, idx) => (
             <div key={idx} className="flex items-start gap-3 border-b border-border/40 pb-3.5 last:border-0 last:pb-0">
-              <div className="h-7 w-7 rounded-xl bg-muted/60 dark:bg-muted/40 text-primary shadow-neu-inset-sm flex items-center justify-center font-bold text-[10.5px] shrink-0 font-mono mt-0.5 border border-border/60">
+              <div className="h-7 w-7 rounded-xl bg-muted/60 dark:bg-muted/40 text-primary shadow-neu-inset-sm flex items-center justify-center font-bold text-3xs shrink-0 font-mono mt-0.5 border border-border/60">
                 {event.userName ? getInitials(event.userName) : "VA"}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1">
-                  <span className="font-semibold text-foreground text-[13px] truncate">
+                  <span className="font-semibold text-foreground text-ui-sm truncate">
                     {event.action}
                   </span>
-                  <time className="text-[11px] font-mono text-muted-foreground shrink-0 tabular-nums">
+                  <time className="text-2xs font-mono text-muted-foreground shrink-0 tabular-nums">
                     {formatDateTime(event.timestamp)}
                   </time>
                 </div>
-                <p className="text-[12px] text-muted-foreground line-clamp-1 mt-0.5">
+                <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                   <Link href={`/leads/${event.leadId}`} className="text-foreground font-medium hover:underline">
                     {event.leadName}
                   </Link>{" "}
-                  <span className="font-mono text-[11px]">({event.leadCode})</span>
+                  <span className="font-mono text-2xs">({event.leadCode})</span>
                 </p>
               </div>
             </div>
@@ -409,8 +409,8 @@ export function BentoAlertBanner({
           <AlertCircle className="w-4.5 h-4.5" />
         </div>
         <div>
-          <p className="text-[14px] font-semibold text-foreground">Pipeline Attention Required</p>
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-sm font-semibold text-foreground">Pipeline Attention Required</p>
+          <p className="text-ui-sm text-muted-foreground">
             {items.map((d) => `${d.count} in ${d.label}`).join(" • ")}
           </p>
         </div>
@@ -418,7 +418,7 @@ export function BentoAlertBanner({
       <div className="flex items-center gap-2 flex-wrap">
         {items.map((d) => (
           <Link key={d.label} href={d.href}>
-            <Button size="sm" variant="outline" className="text-[13px] h-8 px-3">
+            <Button size="sm" variant="outline" className="text-ui-sm h-8 px-3">
               View {d.label} ({d.count})
             </Button>
           </Link>

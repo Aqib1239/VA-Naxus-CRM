@@ -15,8 +15,8 @@ export function VANexusLogo({
   className,
 }: VANexusLogoProps) {
   const sizeMap = {
-    sm: { icon: 24, font: "text-sm", tagline: "text-[9px]" },
-    md: { icon: 32, font: "text-base", tagline: "text-[10px]" },
+    sm: { icon: 24, font: "text-sm", tagline: "text-3xs" },
+    md: { icon: 32, font: "text-base", tagline: "text-3xs" },
     lg: { icon: 40, font: "text-xl", tagline: "text-xs" },
     xl: { icon: 52, font: "text-2xl", tagline: "text-sm" },
   };
@@ -112,7 +112,7 @@ export function VANexusLogo({
           <span className={cn("font-black tracking-tight text-foreground font-sans", currentSize.font)}>
             VA <span className="text-primary font-extrabold">NEXUS</span>
           </span>
-          <span className="rounded-[4px] bg-primary/10 px-1 py-0.2 font-mono text-[9px] font-bold text-primary uppercase tracking-wider">
+          <span className="rounded-[4px] bg-primary/10 px-1 py-0.2 font-mono text-3xs font-bold text-primary uppercase tracking-wider">
             OS
           </span>
         </div>

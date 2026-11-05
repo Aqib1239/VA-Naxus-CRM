@@ -100,7 +100,7 @@ export function Sidebar({
               href={item.href}
               onClick={() => setIsMobileOpen && setIsMobileOpen(false)}
               className={cn(
-                "flex items-center rounded-xl text-[14px] font-medium transition-all duration-200 select-none",
+                "flex items-center rounded-xl text-sm font-medium transition-all duration-200 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                 isActive
                   ? "bg-card text-primary font-semibold border border-primary/25 shadow-neu-inset dark:border-primary/30"
                   : "text-muted-foreground hover:bg-muted/40 hover:text-foreground hover:shadow-neu-raised-sm border border-transparent",
@@ -130,7 +130,7 @@ export function Sidebar({
                 {badgeCount !== null && badgeCount > 0 && (
                   <span
                     className={cn(
-                      "ml-auto text-[11px] font-mono tabular-nums px-2 py-0.5 rounded-full shrink-0 transition-all duration-200",
+                      "ml-auto text-2xs font-mono tabular-nums px-2 py-0.5 rounded-full shrink-0 transition-all duration-200",
                       isActive
                         ? "bg-primary text-primary-foreground border-transparent font-semibold shadow-xs"
                         : "bg-muted/70 text-muted-foreground border border-border/60 shadow-neu-inset-sm"
@@ -144,10 +144,10 @@ export function Sidebar({
 
             {/* Hover Tooltip when collapsed */}
             {isCollapsed && (
-              <div className="fixed left-[78px] ml-1 hidden group-hover:flex items-center gap-2 z-50 rounded-xl bg-card px-3 py-1.5 text-[13px] text-foreground shadow-neu-raised border border-border/80 whitespace-nowrap animate-in fade-in-50">
+              <div className="fixed left-[78px] ml-1 hidden group-hover:flex items-center gap-2 z-50 rounded-xl bg-card px-3 py-1.5 text-ui-sm text-foreground shadow-neu-raised border border-border/80 whitespace-nowrap animate-in fade-in-50">
                 <span className="font-medium">{item.title}</span>
                 {badgeCount !== null && badgeCount > 0 && (
-                  <span className="bg-primary/15 text-primary font-mono text-[11px] px-1.5 py-0.5 rounded-full font-semibold">
+                  <span className="bg-primary/15 text-primary font-mono text-2xs px-1.5 py-0.5 rounded-full font-semibold">
                     {badgeCount}
                   </span>
                 )}
@@ -205,6 +205,7 @@ export function Sidebar({
               "absolute hidden md:flex h-7 w-7 items-center justify-center z-80",
               "border border-border/80 rounded-full text-muted-foreground",
               "bg-card hover:text-foreground shadow-neu-btn hover:shadow-neu-btn-hover active:shadow-neu-inset",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               "transition-all duration-150",
               "top-1/2 -translate-y-1/2",
               "-right-3"
@@ -225,7 +226,7 @@ export function Sidebar({
           <div>
             <h5
               className={cn(
-                "px-2 mb-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider font-mono overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                "px-2 mb-2 text-2xs font-semibold text-muted-foreground uppercase tracking-wider font-mono overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                 isCollapsed ? "max-h-0 opacity-0 pointer-events-none mb-0" : "max-h-6 opacity-100"
               )}
             >
@@ -237,7 +238,7 @@ export function Sidebar({
           <div>
             <h5
               className={cn(
-                "px-2 mb-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider font-mono overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                "px-2 mb-2 text-2xs font-semibold text-muted-foreground uppercase tracking-wider font-mono overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                 isCollapsed ? "max-h-0 opacity-0 pointer-events-none mb-0" : "max-h-6 opacity-100"
               )}
             >
@@ -250,17 +251,17 @@ export function Sidebar({
         {/* Footer info — smoothly transitions */}
         <div
           className={cn(
-            "border-t border-border/80 text-[12px] text-muted-foreground bg-muted/20 overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            "border-t border-border/80 text-xs text-muted-foreground bg-muted/20 overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
             isCollapsed ? "max-h-0 p-0 border-t-0 opacity-0 pointer-events-none" : "max-h-16 p-3 opacity-100"
           )}
         >
           <div className="flex items-center gap-2.5 px-1 whitespace-nowrap">
             <VANexusLogo className="w-2 h-2 text-muted-foreground/70 shrink-0 my-2" />
             {/* <div className="truncate">
-              <p className="font-semibold text-foreground text-[12px] truncate">
+              <p className="font-semibold text-foreground text-xs truncate">
                 VA Nexus
               </p>
-              <p className="text-[10px] text-muted-foreground font-mono">
+              <p className="text-3xs text-muted-foreground font-mono">
                 Connect. Automate. Accelerate.
               </p>
             </div> */}

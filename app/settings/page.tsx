@@ -66,13 +66,13 @@ export default function SettingsPage() {
             title="Accent Color System"
             description="Personalize UI focus rings, primary action buttons, and active indicators"
             badge={
-              <span className="text-[11px] font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-md font-semibold">
+              <span className="text-2xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-md font-semibold">
                 Live Switch
               </span>
             }
           >
             <div className="space-y-3">
-              <span className="text-[12px] font-mono uppercase tracking-wider text-muted-foreground block">
+              <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground block">
                 Select Enterprise Accent Theme
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -93,7 +93,7 @@ export default function SettingsPage() {
                     >
                       <span className={cn("w-4 h-4 rounded-full shrink-0 shadow-2xs", item.previewBg)} />
                       <div className="min-w-0 flex-1">
-                        <span className="text-[13px] font-semibold truncate block leading-tight">
+                        <span className="text-ui-sm font-semibold truncate block leading-tight">
                           {item.name}
                         </span>
                       </div>
@@ -110,17 +110,17 @@ export default function SettingsPage() {
             title="Active User Session"
             description="Current authenticated identity and role privileges"
           >
-            <div className="space-y-4 text-[13px]">
+            <div className="space-y-4 text-ui-sm">
               <div className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border/80 shadow-neu-raised-sm">
                 <div>
-                  <h4 className="font-semibold text-foreground text-[15px]">{user?.name}</h4>
-                  <p className="text-muted-foreground text-[13px]">{user?.email}</p>
-                  <p className="text-[12px] text-muted-foreground font-mono mt-0.5">{user?.department}</p>
+                  <h4 className="font-semibold text-foreground text-base">{user?.name}</h4>
+                  <p className="text-muted-foreground text-ui-sm">{user?.email}</p>
+                  <p className="text-xs text-muted-foreground font-mono mt-0.5">{user?.department}</p>
                 </div>
                 <RoleBadge role={user?.role || role || "ADMIN"} size="md" />
               </div>
 
-              <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-[12px] text-muted-foreground">
+              <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-xs text-muted-foreground">
                 <span className="font-semibold text-foreground">Independent Role Access:</span> Account credentials, permissions, and departmental scopes are authoritatively managed and verified by the backend.
               </div>
             </div>
@@ -131,7 +131,7 @@ export default function SettingsPage() {
             title="REST API Architecture"
             description="End-to-end connected API service endpoints"
           >
-            <div className="p-4 bg-muted/30 rounded-2xl border border-border/80 shadow-neu-inset-sm space-y-2.5 font-mono text-[12.5px]">
+            <div className="p-4 bg-muted/30 rounded-2xl border border-border/80 shadow-neu-inset-sm space-y-2.5 font-mono text-xs">
               <div className="flex justify-between items-center">
                 <span className="text-foreground">POST /api/leads</span>
                 <span className="text-blue-600 dark:text-blue-400 font-semibold">Marketing Create</span>
@@ -164,22 +164,22 @@ export default function SettingsPage() {
             noPadding
           >
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-[13px]">
+              <table className="w-full text-left border-collapse text-ui-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40 text-muted-foreground font-mono">
-                    <th className="py-3 px-4 font-semibold text-[12px] uppercase tracking-wider">Permission</th>
-                    <th className="py-3 px-2 font-semibold text-[12px] text-center">Admin</th>
-                    <th className="py-3 px-2 font-semibold text-[12px] text-center">Mkt</th>
-                    <th className="py-3 px-2 font-semibold text-[12px] text-center">Com</th>
-                    <th className="py-3 px-2 font-semibold text-[12px] text-center">Vig</th>
-                    <th className="py-3 px-2 font-semibold text-[12px] text-center">Sup</th>
-                    <th className="py-3 px-2 font-semibold text-[12px] text-center">Sal</th>
+                    <th className="py-3 px-4 font-semibold text-xs uppercase tracking-wider">Permission</th>
+                    <th className="py-3 px-2 font-semibold text-xs text-center">Admin</th>
+                    <th className="py-3 px-2 font-semibold text-xs text-center">Mkt</th>
+                    <th className="py-3 px-2 font-semibold text-xs text-center">Com</th>
+                    <th className="py-3 px-2 font-semibold text-xs text-center">Vig</th>
+                    <th className="py-3 px-2 font-semibold text-xs text-center">Sup</th>
+                    <th className="py-3 px-2 font-semibold text-xs text-center">Sal</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
                   {permissionsList.map((perm) => (
                     <tr key={perm.key} className="hover:bg-muted/30 transition-colors">
-                      <td className="py-3 px-4 font-medium text-foreground text-[13px]">
+                      <td className="py-3 px-4 font-medium text-foreground text-ui-sm">
                         {perm.label}
                       </td>
                       {allRoles.map((r) => {
@@ -189,7 +189,7 @@ export default function SettingsPage() {
                             {hasPerm ? (
                               <Check className="w-4 h-4 text-emerald-500 mx-auto" />
                             ) : (
-                              <span className="text-muted-foreground/30 text-[13px]">—</span>
+                              <span className="text-muted-foreground/30 text-ui-sm">—</span>
                             )}
                           </td>
                         );

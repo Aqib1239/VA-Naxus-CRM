@@ -105,16 +105,16 @@ export function VigilanceDashboard() {
               <AlertCircle className="w-4.5 h-4.5" />
             </div>
             <div>
-              <p className="text-[14px] font-semibold text-foreground">
+              <p className="text-sm font-semibold text-foreground">
                 {pendingAudio.length} Leads Missing Mandatory Audio Recording
               </p>
-              <p className="text-[13px] text-muted-foreground">
+              <p className="text-ui-sm text-muted-foreground">
                 Audit cannot be completed without an attached call verification file.
               </p>
             </div>
           </div>
           <Link href="/vigilance">
-            <Button size="sm" variant="destructive" className="text-[13px] h-8 px-3">
+            <Button size="sm" variant="destructive" className="text-ui-sm h-8 px-3">
               Upload Audio Now
             </Button>
           </Link>
@@ -145,7 +145,7 @@ export function VigilanceDashboard() {
             noPadding
           >
             {vigilanceLeads.length === 0 ? (
-              <div className="p-6 text-center text-[13px] text-muted-foreground">
+              <div className="p-6 text-center text-ui-sm text-muted-foreground">
                 No active leads in vigilance.
               </div>
             ) : (
@@ -155,12 +155,12 @@ export function VigilanceDashboard() {
                   return (
                     <div key={lead.id} className="p-4 hover:bg-muted/30 transition-colors">
                       <div className="flex items-center justify-between gap-2">
-                        <Link href={`/leads/${lead.id}`} className="font-semibold text-foreground hover:text-primary transition-colors text-[13.5px] truncate">
+                        <Link href={`/leads/${lead.id}`} className="font-semibold text-foreground hover:text-primary transition-colors text-ui-sm truncate">
                           {lead.name}
                         </Link>
                         <span
                           className={cn(
-                            "inline-flex items-center gap-1 font-mono text-[11px] px-2 py-0.5 rounded-md font-semibold border",
+                            "inline-flex items-center gap-1 font-mono text-2xs px-2 py-0.5 rounded-md font-semibold border",
                             hasAudio
                               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                               : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
@@ -179,7 +179,7 @@ export function VigilanceDashboard() {
                           )}
                         </span>
                       </div>
-                      <div className="mt-1 flex items-center justify-between text-[12px] font-mono text-muted-foreground">
+                      <div className="mt-1 flex items-center justify-between text-xs font-mono text-muted-foreground">
                         <span>{lead.leadCode}</span>
                         <span>{lead.city || "Mumbai"}</span>
                       </div>

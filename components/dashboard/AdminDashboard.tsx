@@ -111,7 +111,7 @@ export function AdminDashboard() {
             description="High-density real-time metrics across all active operational stages"
             className="h-full"
             badge={
-              <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md font-semibold">
+              <span className="text-2xs font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md font-semibold">
                 Live Data
               </span>
             }

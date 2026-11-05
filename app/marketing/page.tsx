@@ -79,8 +79,8 @@ export default function MarketingPage() {
                   <UserPlus className="w-4 h-4" />
                 </div>
                 <div>
-                  <CardTitle className="text-[16px]">Create Inbound Lead</CardTitle>
-                  <CardDescription className="text-[13px]">Enter prospect credentials to initiate pipeline</CardDescription>
+                  <CardTitle className="text-base">Create Inbound Lead</CardTitle>
+                  <CardDescription className="text-ui-sm">Enter prospect credentials to initiate pipeline</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -93,17 +93,17 @@ export default function MarketingPage() {
                       <CheckCircle2 className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-[15px] font-semibold text-foreground">
+                      <h4 className="text-base font-semibold text-foreground">
                         Lead Registered & Transferred to Communication
                       </h4>
-                      <p className="text-[13px] text-muted-foreground leading-relaxed">
+                      <p className="text-ui-sm text-muted-foreground leading-relaxed">
                         <strong className="text-foreground">{createdLead.name}</strong> has entered the workflow under Lead ID{" "}
-                        <span className="bg-muted px-2 py-0.5 rounded-md font-mono text-foreground font-semibold text-[12px] border border-border/60">{createdLead.leadCode}</span>.
+                        <span className="bg-muted px-2 py-0.5 rounded-md font-mono text-foreground font-semibold text-xs border border-border/60">{createdLead.leadCode}</span>.
                       </p>
                     </div>
                   </div>
 
-                  <div className="bg-background/90 rounded-xl border border-border/80 shadow-neu-inset-sm p-3.5 text-[13px] space-y-1.5 font-mono">
+                  <div className="bg-background/90 rounded-xl border border-border/80 shadow-neu-inset-sm p-3.5 text-ui-sm space-y-1.5 font-mono">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground font-sans">Lead Code:</span>
                       <span className="font-semibold text-foreground">{createdLead.leadCode}</span>
@@ -147,7 +147,7 @@ export default function MarketingPage() {
                       {...register("name")}
                     />
                     {errors.name && (
-                      <p className="text-[12px] text-destructive">{errors.name.message}</p>
+                      <p className="text-xs text-destructive">{errors.name.message}</p>
                     )}
                   </div>
 
@@ -163,11 +163,11 @@ export default function MarketingPage() {
                       {...register("contactNumber")}
                     />
                     {errors.contactNumber && (
-                      <p className="text-[12px] text-destructive">
+                      <p className="text-xs text-destructive">
                         {errors.contactNumber.message}
                       </p>
                     )}
-                    <p className="text-[12px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Locked automatically in downstream stages per anti-tampering policy.
                     </p>
                   </div>
@@ -225,11 +225,11 @@ export default function MarketingPage() {
         <div className="lg:col-span-5 space-y-6">
           <Card className="bg-muted/30 border-border/80 shadow-neu-inset rounded-2xl">
             <CardHeader className="py-4 px-5 border-b border-border/60">
-              <CardTitle className="text-[12px] font-mono uppercase tracking-wider text-muted-foreground">
+              <CardTitle className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
                 Marketing Stage Directives
               </CardTitle>
             </CardHeader>
-            <CardContent className="text-[13px] space-y-2.5 text-muted-foreground px-5 py-4 leading-relaxed">
+            <CardContent className="text-ui-sm space-y-2.5 text-muted-foreground px-5 py-4 leading-relaxed">
               <p>
                 <strong className="text-foreground">Intake:</strong> Captures fresh prospects with verified contact numbers.
               </p>
@@ -241,27 +241,27 @@ export default function MarketingPage() {
 
           <Card className="shadow-neu-raised rounded-2xl border border-border/80">
             <CardHeader className="py-4 px-5 border-b border-border/60">
-              <CardTitle className="text-[16px]">Recent Marketing Entries</CardTitle>
-              <CardDescription className="text-[13px]">Recently registered inbound leads</CardDescription>
+              <CardTitle className="text-base">Recent Marketing Entries</CardTitle>
+              <CardDescription className="text-ui-sm">Recently registered inbound leads</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y divide-border/50 text-[13px]">
+              <div className="divide-y divide-border/50 text-ui-sm">
                 {recentDispatches.map((lead) => (
                   <div key={lead.id} className="p-4 hover:bg-muted/40 transition-colors flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <Link href={`/leads/${lead.id}`} className="font-semibold text-foreground hover:text-primary transition-colors text-[14px]">
+                        <Link href={`/leads/${lead.id}`} className="font-semibold text-foreground hover:text-primary transition-colors text-sm">
                           {lead.name}
                         </Link>
-                        <span className="text-[11px] font-mono text-muted-foreground bg-muted px-1.5 py-0.2 rounded">
+                        <span className="text-2xs font-mono text-muted-foreground bg-muted px-1.5 py-0.2 rounded">
                           {lead.leadCode}
                         </span>
                       </div>
-                      <p className="text-[12px] text-muted-foreground font-mono mt-0.5">
+                      <p className="text-xs text-muted-foreground font-mono mt-0.5">
                         {lead.contactNumber} • {lead.city}
                       </p>
                     </div>
-                    <DepartmentBadge department={lead.currentDepartment} className="text-[11px] py-0.5 px-2" />
+                    <DepartmentBadge department={lead.currentDepartment} className="text-2xs py-0.5 px-2" />
                   </div>
                 ))}
               </div>

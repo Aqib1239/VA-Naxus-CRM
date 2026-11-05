@@ -20,7 +20,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           type={type}
           disabled={disabled}
           className={cn(
-            "flex h-10 w-full rounded-xl border border-border/80 bg-background/80 dark:bg-muted/40 px-3.5 py-2 text-[14.5px] text-foreground shadow-neu-inset transition-all file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-50",
+            "flex h-10 w-full rounded-xl border border-border/80 bg-background/80 dark:bg-muted/40 px-3.5 py-2 text-sm text-foreground shadow-neu-inset transition-all file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-50",
             leftIcon && "pl-10",
             rightIcon && "pr-10",
             error && "border-destructive focus-visible:ring-destructive/30",
@@ -49,7 +49,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <textarea
         className={cn(
-          "flex min-h-[90px] w-full rounded-xl border border-border/80 bg-background/80 dark:bg-muted/40 px-3.5 py-2.5 text-[14.5px] text-foreground shadow-neu-inset transition-all placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-50 leading-relaxed",
+          "flex min-h-[90px] w-full rounded-xl border border-border/80 bg-background/80 dark:bg-muted/40 px-3.5 py-2.5 text-sm text-foreground shadow-neu-inset transition-all placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-50 leading-relaxed",
           error && "border-destructive focus-visible:ring-destructive/30",
           className
         )}
@@ -69,7 +69,7 @@ export function Label({ className, required, children, ...props }: LabelProps) {
   return (
     <label
       className={cn(
-        "text-[14px] font-medium text-foreground/90 leading-none select-none inline-flex items-center gap-1 mb-1.5",
+        "text-sm font-medium text-foreground/90 leading-none select-none inline-flex items-center gap-1 mb-1.5",
         className
       )}
       {...props}

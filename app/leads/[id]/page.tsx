@@ -140,7 +140,7 @@ export default function LeadDetailPage() {
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
               {lead.name}
             </h1>
-            <span className="font-mono text-[12px] text-muted-foreground bg-muted/80 px-2.5 py-0.5 rounded-md border border-border">
+            <span className="font-mono text-xs text-muted-foreground bg-muted/80 px-2.5 py-0.5 rounded-md border border-border">
               {lead.leadCode}
             </span>
           </div>
@@ -162,7 +162,7 @@ export default function LeadDetailPage() {
         title="Sequential Workflow Lifecycle"
         description="Active progression through the 5-stage qualification pipeline"
         badge={
-          <span className="text-[11px] font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-md font-semibold">
+          <span className="text-2xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-md font-semibold">
             Stage Progression
           </span>
         }
@@ -175,31 +175,31 @@ export default function LeadDetailPage() {
         {/* Left Column (6 cols): Prospect & Contact Info */}
         <div className="lg:col-span-6 space-y-5 sm:space-y-6">
           <BentoCard title="Prospect & Contact Details" description="Primary account contact information">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13.5px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-ui-sm">
               <div className="p-3.5 rounded-xl border border-border/80 bg-muted/30 space-y-1">
-                <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block">
+                <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider block">
                   Lead Name
                 </span>
-                <p className="font-semibold text-foreground text-[14.5px]">{lead.name}</p>
-                <span className="font-mono text-muted-foreground text-[12px]">{lead.leadCode}</span>
+                <p className="font-semibold text-foreground text-sm">{lead.name}</p>
+                <span className="font-mono text-muted-foreground text-xs">{lead.leadCode}</span>
               </div>
 
               <div className="p-3.5 rounded-xl border border-border/80 bg-muted/30 space-y-1">
-                <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block">
+                <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider block">
                   Contact Number
                 </span>
-                <p className="font-mono font-semibold text-foreground text-[14.5px] flex items-center gap-1.5">
+                <p className="font-mono font-semibold text-foreground text-sm flex items-center gap-1.5">
                   <Phone className="w-3.5 h-3.5 text-muted-foreground" />
                   {lead.contactNumber}
                 </p>
-                <span className="text-[11px] font-mono text-muted-foreground">Immutable Field</span>
+                <span className="text-2xs font-mono text-muted-foreground">Immutable Field</span>
               </div>
 
               <div className="sm:col-span-2 p-3.5 rounded-xl border border-border/80 bg-muted/30 space-y-1">
-                <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block">
+                <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider block">
                   Postal Address
                 </span>
-                <p className="text-foreground text-[13.5px]">
+                <p className="text-foreground text-ui-sm">
                   {lead.postalAddress ? (
                     <>
                       {lead.postalAddress}, {lead.city}, {lead.state} {lead.pincode && `- ${lead.pincode}`}
@@ -211,10 +211,10 @@ export default function LeadDetailPage() {
               </div>
 
               <div className="sm:col-span-2 p-3.5 rounded-xl border border-border/80 bg-muted/30 space-y-1">
-                <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider block">
+                <span className="text-2xs font-mono text-muted-foreground uppercase tracking-wider block">
                   Lead Origin & Remarks
                 </span>
-                <p className="text-muted-foreground text-[13px] leading-relaxed">
+                <p className="text-muted-foreground text-ui-sm leading-relaxed">
                   {lead.remark || "Direct inbound inquiry."}
                 </p>
               </div>
@@ -223,7 +223,7 @@ export default function LeadDetailPage() {
 
           {/* Department Stage Checkpoints */}
           <BentoCard title="Department Verification Checkpoints" description="Stage outputs and confirmed metadata">
-            <div className="space-y-3 text-[13px]">
+            <div className="space-y-3 text-ui-sm">
               {/* Meeting Scheduled Details */}
               <div className="p-3.5 rounded-xl border border-border/80 bg-muted/30 space-y-1">
                 <div className="flex justify-between items-center mb-1">
@@ -232,16 +232,16 @@ export default function LeadDetailPage() {
                     Communication Meeting Slot
                   </span>
                   {lead.communicationDetails?.scheduledDate ? (
-                    <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md font-semibold">
+                    <span className="text-2xs font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md font-semibold">
                       Confirmed
                     </span>
                   ) : (
-                    <span className="text-[11px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                    <span className="text-2xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
                       Pending
                     </span>
                   )}
                 </div>
-                <p className="font-mono text-muted-foreground text-[12.5px]">
+                <p className="font-mono text-muted-foreground text-xs">
                   {lead.communicationDetails?.scheduledDate
                     ? `${lead.communicationDetails.scheduledDate} at ${lead.communicationDetails.scheduledTime}`
                     : "No meeting scheduled yet."}
@@ -255,11 +255,11 @@ export default function LeadDetailPage() {
                     <ShieldCheck className="w-3.5 h-3.5 text-teal-500" />
                     Support 3-Point Verification
                   </span>
-                  <span className="text-[11px] font-mono text-muted-foreground">
+                  <span className="text-2xs font-mono text-muted-foreground">
                     {lead.supportDetails?.allocatedTo ? `Allocated to ${lead.supportDetails.allocatedTo}` : "Unallocated"}
                   </span>
                 </div>
-                <div className="grid grid-cols-3 gap-2 pt-1 font-mono text-[11.5px] text-center">
+                <div className="grid grid-cols-3 gap-2 pt-1 font-mono text-2xs text-center">
                   <div className={`p-1.5 rounded-lg border ${lead.supportDetails?.verification?.isDateVerified ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" : "bg-muted text-muted-foreground border-border"}`}>
                     Date: {lead.supportDetails?.verification?.isDateVerified ? "✓" : "—"}
                   </div>
@@ -300,9 +300,9 @@ export default function LeadDetailPage() {
                 />
               </div>
             ) : (
-              <div className="p-6 text-center text-[13px] text-muted-foreground border border-dashed border-border rounded-xl bg-muted/20">
+              <div className="p-6 text-center text-ui-sm text-muted-foreground border border-dashed border-border rounded-xl bg-muted/20">
                 <p>Voice recording not yet uploaded for this lead.</p>
-                <p className="text-[12px] text-muted-foreground/80 mt-0.5">Recording will be attached in Stage 3 (Vigilance).</p>
+                <p className="text-xs text-muted-foreground/80 mt-0.5">Recording will be attached in Stage 3 (Vigilance).</p>
               </div>
             )}
           </BentoCard>
